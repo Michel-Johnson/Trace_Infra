@@ -1,0 +1,29 @@
+技术对比与选型
+
+先看你图里四列。它们不是四个可以互换的产品。Firecracker 是微型虚拟机监视器。CRIU 是 Linux 进程检查点工具。E2B Runtime 和 CubeSandbox 才是完整的 Agent Sandbox 产品。选型时不要把底座和产品放在同一格里比。
+
+Firecracker 负责创建 KVM 微虚拟机，并能把 CPU 和内存写成快照文件。它不管磁盘版本，也不提供 sandbox_id、fork API、对象存储。自己做一套 E2B 级别的控制面，成本很高。本项目不直接选用 Firecracker 当产品层。
+
+CRIU 把一个进程的地址空间存下来再恢复。它和宿主机共用内核，不负责磁盘版本，隔离不够。agent 会跑 shell、改文件、装软件，环境边界必须是虚拟机。CRIU 不作为本项目的环境层。以后若要在虚拟机内部加速进程恢复，再评估，现在不做。
+
+E2B Runtime 是完整沙箱产品，底层用 Firecracker。pause 停同一台。create_snapshot 留下可反复使用的检查点。fork 是先 snapshot 再启动最多 100 台新虚拟机。跨节点对象存储成熟，适合把快照放到 S3。它没有「同一个 sandbox_id 原地回到旧检查点」作为核心 API。重试错误命令时，通常是 kill 再按 snapshot_id 新建一台。
+
+CubeSandbox 也是完整沙箱产品，底层是 Cloud Hypervisor 或 RustVMM，不是 Firecracker。create_snapshot 留检查点。clone(n=N) 从当前状态复制 N 台。rollback(snapshot_id) 让同一台机器回到旧检查点，sandbox_id 不变。磁盘用 XFS reflink，快照是元数据级复制。协议声称兼容 E2B。跨节点对象存储仍在增强，成熟度低于 E2B。
+
+我们的实验需要三件事。第一，把环境停在某个 state。第二，从该 state 开出 N 份副本，多次调模型。第三，某次命令把环境改坏后，回到该 state 再试。前两件 E2B 和 CubeSandbox 都能做。第三件 CubeSandbox 的 rollback 直接对应，E2B 要用新虚拟机模拟。
+
+选型如下。
+
+环境执行层选用 CubeSandbox。原因是 API 和我们的 state、fork、重试对齐：snapshot 当 state，clone 当 N 路实验，rollback 当错误命令后的原地恢复。不自研 VMM。接受的风险是跨节点存快照比 E2B 弱，集群变大时要再评估是否把快照仓库改成 E2B 那种对象存储布局。
+
+虚拟化底座不单选。跟着 CubeSandbox 使用它自带的 RustVMM。不要并行再接一套 Firecracker，两套快照格式无法共用。
+
+轨迹采集不选用这四项里的任何一个。sandbox 只保存磁盘和内存，不保存 prompt 和模型输出。采集层沿用 Langfuse 的拆法：原始 span 和完整 observation 先写对象存储，检索进 ClickHouse，用户和 run 元数据进 Postgres。
+
+state 索引用 Postgres。一行记录 state_id、parent_state_id、sandbox 快照 URI、当时的模型输入 URI、task_id、seed。不要把内存 dump 放进数据库。
+
+第一期 example 任务不上虚拟机。这些任务由 task_id 加 seed 加已记录的 action 前缀即可还原。CubeSandbox 只用于真实 shell、文件、进程会变的环境。
+
+重放流程固定为：恢复最近 state 对应的 snapshot，按 span 重放记录到错误前一步，再 clone N 份并重新调模型。不要在错误已经执行之后的环境上做实验。
+
+总结：环境用 CubeSandbox；轨迹用对象存储加 ClickHouse；索引用 Postgres；Firecracker 和 CRIU 不当产品层。example 任务继续用 seed 加重放，不上虚机。
