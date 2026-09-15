@@ -1,7 +1,5 @@
 # 怎么打开这些课
 
-上一轮给的 `file://` 路径在云端机器上，你的浏览器打不开。
+仓库是私有的，htmlpreview 会报 `TypeError: Failed to fetch`。
 
-把 `reply.html` 下载到本地，用浏览器打开。或打开：
-
-https://htmlpreview.github.io/?https://github.com/Michel-Johnson/Trace_Infra/blob/cursor/trace-infra-state-span-dfe6/docs/e2b-learn/reply.html
+在 GitHub 打开 `reply.html`，点 Raw，另存为本地文件，再用浏览器打开。
