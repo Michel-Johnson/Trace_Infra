@@ -1,6 +1,6 @@
 # 第 3 阶段：单机虚机最小切片
 
-Firecracker 从模板 rootfs 启动 sandbox。`CommitState` 写出 `snapfile`、`memfile`、`rootfs`、`header`。`RestoreState` 按这些文件恢复并继续 `exec`。磁盘是普通 ext4，不是 overlaybd。UFFD 和 forkd 不在本阶段。example 任务仍走 `backend=episode`。
+Firecracker 从模板 rootfs 启动 sandbox。`CommitState` 写出 `snapfile`、`memfile`、`rootfs`、`header`。`RestoreState` 按这些文件恢复并继续 `exec`。磁盘是普通 ext4，不是 overlaybd。UFFD 和 forkd 不在本阶段。进程内接口测试走 `backend=episode`。
 
 ## 怎么调用
 

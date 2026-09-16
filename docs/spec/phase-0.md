@@ -1,6 +1,6 @@
 # 第 0 阶段：契约
 
-本文件是已确认开发计划的第 0 阶段产出。覆盖四条接口、Postgres 表、S3 key、span 事件。第 1 阶段在本仓库 `Episode` 上实现语义；Firecracker 从第 3 阶段才出现。example 任务的 `brief`、`actions()`、`score()` 不改。
+本文件是已确认开发计划的第 0 阶段产出。覆盖四条接口、Postgres 表、S3 key、span 事件。第 1 阶段在本仓库 `Episode` 上实现语义；Firecracker 从第 3 阶段才出现。episode 后端用内置 `counter` 任务做接口测试。
 
 后端分两种，接口相同：`episode`（seed 加重放）和 `firecracker`（微虚拟机）。调用方只使用下面的字段，不直接依赖 VMM。
 
@@ -224,7 +224,7 @@ runs/{run_id}/spans/{span_id}/events/{t:08d}.json
   "state_id": "01J...",
   "run_id": "01J...",
   "backend": "episode",
-  "task_id": "clinical_signal",
+  "task_id": "counter",
   "seed": 3,
   "t": 7,
   "protocol": 1
@@ -265,4 +265,4 @@ runs/{run_id}/spans/{span_id}/events/{t:08d}.json
 
 ## 第 1 阶段验收对照
 
-五个 example 任务、同一 `task_id+seed`：CommitState 后 RestoreState，再 ReplaySpan 到某 `stop_before_t`，环境的 budget、`t`、后续 `act` 的 observation 必须与一次连续跑到该步相同。Branch(n=2) 之后，两份 child 各自 `act` 互不影响。任务文件不改。
+`counter` 任务、同一 `task_id+seed`：CommitState 后 RestoreState，再 ReplaySpan 到某 `stop_before_t`，环境的 budget、`t`、后续 `act` 的 observation 必须与一次连续跑到该步相同。Branch(n=2) 之后，两份 child 各自 `act` 互不影响。

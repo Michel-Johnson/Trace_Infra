@@ -1,6 +1,6 @@
 # 第 2 阶段：索引和原始轨迹
 
-Postgres 表落地；完整 span 事件仍按第 0 阶段的 S3 key 写对象。ClickHouse 不在本阶段。example 任务文件不改。本仓库保持标准库，进程内用 sqlite3，表名和列名与 `docs/spec/schema.sql` 相同。
+Postgres 表落地；完整 span 事件仍按第 0 阶段的 S3 key 写对象。ClickHouse 不在本阶段。本仓库保持标准库，进程内用 sqlite3，表名和列名与 `docs/spec/schema.sql` 相同。
 
 ## 分工
 

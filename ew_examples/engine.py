@@ -1,20 +1,7 @@
-"""The episode loop: budgets, action dispatch, trajectory recording, scoring.
+"""Episode loop for the in-process backend: budget, act, trajectory, score.
 
-Self-contained on purpose. This package shares no code with the Executable World
-implementation it imitates; it exists so anyone can see the *shape* of an EW task
-and drive one from a laptop with nothing installed. The action names, the reply
-envelope and the trajectory format match the real thing, so a harness built here
-needs no changes to run against a real environment later.
-
-Three ideas carry over from the real system and are worth understanding, because
-they are what make these tasks different from a chat benchmark:
-
-  * You cannot see the world. Everything is behind typed actions, and every action
-    costs something from a finite budget. Deciding what to look at IS the task.
-  * The reply is always the same envelope. Only `observation` differs per task, so
-    one parser handles every task you will ever be given.
-  * A submission is executed against hidden truth. You are scored on what your plan
-    actually lands, not on what you claimed it would.
+Firecracker RestoreState does not use this. This module is the other backend:
+pickle a Task, then Restore / Replay / Branch without a microVM.
 """
 from __future__ import annotations
 

@@ -6,7 +6,7 @@
 
 跨节点：快照和索引放在共享 `objects` 目录（生产里是 S3 + Postgres）。每个节点自己的 `live/` 只放活 jail。节点 B 打开同一 `objects`、空的 live 根，用 `state_id` 做 `RestoreState`，得到自己的 `sandbox_id`。
 
-example 任务仍走 `backend=episode`。任务文件不改。
+进程内接口测试走 `backend=episode`。
 
 ## HTTP
 

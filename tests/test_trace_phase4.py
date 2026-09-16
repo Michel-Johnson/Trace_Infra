@@ -221,7 +221,7 @@ def test_ublk_absent_falls_back_to_file(tmp_path):
 
 def test_start_run_still_defaults_to_episode(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", 3)
+    started = rt.start_run("counter", 3)
     assert started["backend"] == "episode"
 
 

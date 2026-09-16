@@ -36,27 +36,27 @@ def _http(base: str, method: str, path: str, body: dict | None = None) -> tuple[
 def test_clickhouse_returns_full_observation_not_summary(tmp_path):
     """Acceptance: analytics lookup by run_id has the full observation."""
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("corpus_procurement", SEED)
+    started = rt.start_run("counter", SEED)
     sid = started["sandbox_id"]
-    first = rt.act(sid, "sample_source", {"source": "src_00", "n": 8})
+    first = rt.act(sid, "list_items", {})
     items = first["observation"]["items"]
     assert len(items) == 8
     rows = rt.analytics.query_events(run_id=started["run_id"])
     assert [r["t"] for r in rows] == [1]
-    assert rows[0]["action"] == "sample_source"
+    assert rows[0]["action"] == "list_items"
     assert rows[0]["observation"]["items"] == items
     assert len(rows[0]["observation"]["items"]) == 8
 
 
 def test_analytics_reingest_from_object_store(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", SEED)
-    rt.act(started["sandbox_id"], "list_candidates", {})
+    started = rt.start_run("counter", SEED)
+    rt.act(started["sandbox_id"], "peek", {})
     ch = ClickHouse(str(tmp_path / "empty-ch.sqlite"))
     n = ch.ingest_from_store(rt.store)
     assert n >= 1
     got = ch.query_events(run_id=started["run_id"])
-    assert got[0]["action"] == "list_candidates"
+    assert got[0]["action"] == "peek"
     assert got[0]["observation"] is not None
 
 
@@ -66,9 +66,9 @@ def test_cross_node_restore_from_shared_objects(tmp_path):
     node_a = str(tmp_path / "node_a")
     node_b = str(tmp_path / "node_b")
     a = Runtime(node_a, objects=shared)
-    started = a.start_run("verify_solutions", SEED)
+    started = a.start_run("counter", SEED)
     sid = started["sandbox_id"]
-    a.act(sid, "list_candidates", {})
+    a.act(sid, "peek", {})
     committed = a.commit_state(sid, prompt=PROMPT)
     b = Runtime(node_b, objects=shared)
     restored = b.restore_state(committed["state_id"])
@@ -79,11 +79,11 @@ def test_cross_node_restore_from_shared_objects(tmp_path):
         shared, "snapshots", committed["state_id"], "episode.json"))
     assert os.path.isfile(os.path.join(shared, "index.sqlite"))
     assert not os.path.exists(os.path.join(node_b, "index.sqlite"))
-    env = b.act(restored["sandbox_id"], "list_candidates", {})
+    env = b.act(restored["sandbox_id"], "peek", {})
     assert env["status"] == "ok"
-    assert "candidates" in env["observation"]
+    assert "value" in env["observation"]
     with pytest.raises(TraceError) as e:
-        b.act(sid, "list_candidates", {})
+        b.act(sid, "peek", {})
     assert e.value.code == "SandboxGone"
 
 
@@ -93,11 +93,11 @@ def test_http_start_act_commit_restore_branch(tmp_path):
     httpd, base = serve(rt)
     try:
         code, started = _http(base, "POST", "/v1/runs", {
-            "task_id": "verify_solutions", "seed": SEED})
+            "task_id": "counter", "seed": SEED})
         assert code == 201
         sid = started["sandbox_id"]
         code, env = _http(base, "POST", f"/v1/sandboxes/{sid}/act", {
-            "name": "list_candidates", "params": {}})
+            "name": "peek", "params": {}})
         assert code == 200
         assert env["status"] == "ok"
         code, committed = _http(base, "POST", f"/v1/sandboxes/{sid}/commit", {
@@ -115,7 +115,7 @@ def test_http_start_act_commit_restore_branch(tmp_path):
         code, events = _http(base, "GET",
                              f"/v1/analytics/events?run_id={started['run_id']}")
         assert code == 200
-        assert events["events"][0]["action"] == "list_candidates"
+        assert events["events"][0]["action"] == "peek"
         code, missing = _http(base, "GET", "/v1/states/does-not-exist")
         assert code == 404
         assert missing["error"] == "StateNotFound"
@@ -128,12 +128,12 @@ def test_e2b_aliases_create_snapshot_fork(tmp_path):
     httpd, base = serve(rt)
     try:
         code, started = _http(base, "POST", "/sandboxes", {
-            "task_id": "verify_solutions", "seed": SEED,
-            "templateID": "verify_solutions"})
+            "task_id": "counter", "seed": SEED,
+            "templateID": "counter"})
         assert code == 201
         sid = started["sandbox_id"]
         _http(base, "POST", f"/v1/sandboxes/{sid}/act", {
-            "name": "list_candidates", "params": {}})
+            "name": "peek", "params": {}})
         code, snap = _http(base, "POST", f"/sandboxes/{sid}/snapshots", {
             "prompt": PROMPT})
         assert code == 201
@@ -151,7 +151,7 @@ def test_e2b_aliases_create_snapshot_fork(tmp_path):
 
 def test_start_run_still_defaults_to_episode(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", SEED)
+    started = rt.start_run("counter", SEED)
     assert started["backend"] == "episode"
 
 

@@ -95,9 +95,9 @@ def test_fork_disk_shares_base_and_isolates_upper(tmp_path):
 
 def test_episode_branch_still_works(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", 3)
+    started = rt.start_run("counter", 3)
     sid = started["sandbox_id"]
-    rt.act(sid, "list_candidates", {})
+    rt.act(sid, "peek", {})
     got = rt.branch(sid, 2)
     assert len(got["children"]) == 2
     assert all("sandbox_id" in c for c in got["children"])

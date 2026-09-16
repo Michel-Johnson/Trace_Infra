@@ -1,16 +1,8 @@
-"""The example tasks. Each is one shape of problem, not one instance of it."""
-from .clinical_signal import ClinicalSignal
-from .corpus_dedup import CorpusDedup
-from .treatment_response import TreatmentResponse
-from .corpus_procurement import CorpusProcurement
-from .verify_solutions import VerifySolutions
+"""Episode-backend tasks. One tiny counter; firecracker does not use this."""
+from .counter import Counter
 
 TASKS = {
-    "corpus_procurement": CorpusProcurement,
-    "verify_solutions": VerifySolutions,
-    "corpus_dedup": CorpusDedup,
-    "clinical_signal": ClinicalSignal,
-    "treatment_response": TreatmentResponse,
+    "counter": Counter,
 }
 
 
@@ -24,5 +16,4 @@ def load_task(task_id: str, seed: int = 0):
     return cls(seed=seed)
 
 
-__all__ = ["TASKS", "load_task", "CorpusProcurement", "VerifySolutions",
-           "CorpusDedup", "ClinicalSignal", "TreatmentResponse"]
+__all__ = ["TASKS", "load_task", "Counter"]

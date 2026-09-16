@@ -155,22 +155,22 @@ def test_check_restore_skips_without_assets(tmp_path):
 
 def test_restore_and_replay_without_span_is_restore_only(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", 3)
+    started = rt.start_run("counter", 3)
     got = rt.restore_and_replay(started["state_id"])
     assert got["replay"] is None
     assert got["backend"] == "episode"
     assert got["sandbox_id"] != started["sandbox_id"]
     assert got["state_id"] == started["state_id"]
-    env = rt.act(got["sandbox_id"], "list_candidates", {})
+    env = rt.act(got["sandbox_id"], "peek", {})
     assert env["status"] == "ok"
 
 
 def test_restore_and_replay_optional_span(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", 3)
+    started = rt.start_run("counter", 3)
     sid = started["sandbox_id"]
     span_id = rt._box(sid).span_id
-    first = rt.act(sid, "list_candidates", {})
+    first = rt.act(sid, "peek", {})
     assert first["status"] == "ok"
     got = rt.restore_and_replay(
         started["state_id"], span_id=span_id, stop_before_t=2)

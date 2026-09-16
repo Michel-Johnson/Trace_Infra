@@ -57,9 +57,9 @@ def test_guest_agent_exec_over_unix_socket(tmp_path):
 
 def test_start_run_still_defaults_to_episode(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", 3)
+    started = rt.start_run("counter", 3)
     assert started["backend"] == "episode"
-    env = rt.act(started["sandbox_id"], "list_candidates", {})
+    env = rt.act(started["sandbox_id"], "peek", {})
     assert env["status"] == "ok"
 
 

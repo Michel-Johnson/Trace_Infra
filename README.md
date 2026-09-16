@@ -1,315 +1,131 @@
-# Executable World — example tasks
+# Trace Infra
 
-Five example tasks built in the shape of an Executable World environment, so you can
-see what one feels like and get an agent running against one on your laptop this
-afternoon.
+记录一次 sandbox 运行，在某个检查点冻住，再在同一套环境里解冻。你要的 state 是虚拟机冻住再恢复：当时的文件还在，当时正在跑的进程还在。
 
-**Nothing to install.** Python 3.9+ and the standard library. No account, no API key,
-no network, no Docker.
+把旧命令再执行一遍（`ReplaySpan`）是另一件事，不算这份 state。
 
-```bash
-git clone https://github.com/ApodexAI/executable-world-examples.git
-cd executable-world-examples
-
-python3 run_task.py --list
-python3 run_task.py --task clinical_signal --brief
-python3 run_task.py --task clinical_signal --interactive
-python3 run_task.py --task clinical_signal --agent example_agent:solve
-```
-
-## Submit your solver
-
-Ready to be evaluated on the real environments — with your own harness, your own
-model, or both?
-
-- **https://traces.apodex.com/submit-your-solver**
-- **sheng@apodex.com**
-- **brian@apodex.com**
-
-This repository is practice. Submitting is a separate, formal arrangement, and the
-two addresses above are the fastest route to starting one.
+仓库只要 Python 3.9+ 标准库就能跑不启动虚拟机的测试。活的 Firecracker 回放必须在本机有可用的 `/dev/kvm`。
 
 ---
 
-## Read this before anything else
+## 配环境
 
-**These are not our environments.** They were written for this repository, they
-share no code and no data with the real ones, and they are far simpler. A perfect
-score here means your harness works. It says nothing about how you would do on a
-real environment, and it is not a submission to anything.
+不测虚拟机时，克隆后装 pytest 即可：
 
-What they *are* is a faithful model of the **interface and the habits of mind** a
-real environment rewards. Same reply envelope, same action-and-cost structure, same
-trajectory format. Build against these and the real thing will not surprise you
-structurally — only in difficulty.
+```
+git clone https://github.com/Michel-Johnson/Trace_Infra.git
+cd Trace_Infra
+python3 -m pip install pytest
+python3 -m pytest tests/ -q
+```
 
-[What the real environments add](#what-the-real-thing-adds) is at the bottom, and
-worth reading before you assume this is the whole picture.
+测虚拟机回放时，当前用户还要能读写 `/dev/kvm`。再准备三个文件，默认放在 `/tmp/trace-fc-assets/`（可用环境变量 `TRACE_FC_ASSETS` 改路径）：
+
+- `firecracker`：Firecracker 可执行文件，已知能用 v1.16.1
+- `vmlinux`：给 Firecracker 的内核
+- `rootfs.ext4`：根盘。里面要有 `/guest_agent`，以及内容为 `exec /guest_agent` 的 `/init`
+
+本机还没有这些文件时，需要 `gcc`、`mkfs.ext4`、能 `mount -o loop`（通常要 sudo）：
+
+```
+python3 -m ew_examples.vm_replay --prepare --assets /tmp/trace-fc-assets
+```
+
+先看缺什么：
+
+```
+python3 -m ew_examples.vm_replay --diagnose --assets /tmp/trace-fc-assets
+```
+
+`ready` 为 `true` 才继续跑活测试。更细的步骤见 `docs/spec/vm-replay-test.md`。
 
 ---
 
-## What makes these different from a chat benchmark
+## 怎么测
 
-**You cannot see the world.** Everything is behind typed actions, and every action
-spends from a finite budget. There is no context window containing the problem —
-there is a brief, and a set of things you may ask. Deciding *what to look at* is
-most of the task.
+不启动虚拟机（这边云主机也是这条）：
 
-**Your submission is executed against hidden truth.** You are scored on what your
-plan actually lands, not on what you claimed it would. A confident wrong answer
-scores worse than an honest uncertain one.
+```
+python3 -m pytest tests/ -q
+```
 
-**Some of what you are shown is a trap.** Not to be unfair — because real data has
-mirrors, generators, columns you must not touch, and fields whose units nobody
-harmonised. An agent that believes everything it is served does badly, and that is
-the point.
+测这台机器能不能做虚拟机回放：
 
-## The five tasks
+```
+python3 -m ew_examples.vm_replay --assets /tmp/trace-fc-assets
+```
 
-| task | what you do | the lesson |
-|---|---|---|
-`corpus_procurement` | probe hidden data sources, submit a purchasing plan | a source can be genuine and still not worth having |
-`verify_solutions` | decide which of five implementations is correct | one well-chosen test beats five careless ones |
-`corpus_dedup` | deduplicate a corpus, keep a benchmark out of it | two objectives that pull against each other |
-`clinical_signal` | find the safety signal in a trial and report it | a correct number you cannot justify is not a result |
-`treatment_response` | pick columns to predict treatment response | the strongest predictors in the table are the ones you may not use |
-
-Two of them have a **gate** — a rule that zeroes an otherwise good answer:
-
-- `clinical_signal` fails a finding that rests on data you neither checked nor
-  flagged, *even when the finding is correct*. Declaring a limitation is free and
-  unlimited, and it is the only thing that can save the marks.
-- `treatment_response` fails any model built on a post-treatment column, however
-  well it fits.
-
-Both gates warn you first. If you only try one task, try `clinical_signal` — most
-agents fail it the first time by being fluent and confident over a field whose own
-metadata says it was never verified, which is exactly how capable analysts produce
-unusable work.
-
-A different `--seed` gives a genuinely different instance of every task except
-`verify_solutions`, whose five candidates are fixed.
+通过标准：启动虚拟机，写入 `/tmp/marker`（内容 `keepme`），后台启动 `sleep`，`CommitState`，再 `RestoreState` 得到**新的** `sandbox_id`。新虚拟机里文件还在、`sleep` 还在。
 
 ---
 
-## How to use it
+## 输出格式
 
-### 1. Play a task yourself
+`python3 -m ew_examples.vm_replay` 往标准输出打一段 JSON。退出码：`0` 通过，`2` 这台机器测不了，`1` 失败。
 
-```
-$ python3 run_task.py --task verify_solutions --interactive
-
-> run_all input="(]"
-{
-  "protocol": 1,
-  "status": "ok",
-  "cost_charged": 1,
-  "budget_remaining": {"reads": 5, "test_runs": 11},
-  "observation": {
-    "input": "(]",
-    "returned": {"cand_a": false, "cand_b": false, "cand_c": false,
-                 "cand_d": false, "cand_e": true},
-    "note": "disagreement between candidates on one input is the cheapest evidence you can buy"
-  }
-}
-
-> submit pick=cand_a
-{"status": "ok", "observation": {"score": 1.0, "feedback": ["correct"]}}
-```
-
-You type the action; the environment cannot tell you apart from a model. Ten minutes
-of this is worth more than reading the rest of this file.
-
-### 2. Watch the bundled agent
-
-`example_agent.py` solves all five with **no model at all** — just fixed logic — so
-you can see the loop before adding anything.
-
-```bash
-python3 run_task.py --task treatment_response --agent example_agent:solve
-```
-
-```
-actions taken : 12
-score         : 1.0067
-  - external R² 0.3321 against baselines mean=-0.013, clinical=0.1994,
-    clinical+genetic=0.3321, all_allowed=0.3298
-  - beat the all-columns baseline — dropping columns that carry no signal is the
-    actual skill here
-trajectory    : runs/treatment_response-.../trajectory.jsonl
-```
-
-### 3. Drive it from your own code
-
-```python
-from ew_examples import load_task, Episode
-
-task = load_task("clinical_signal", seed=3)
-ep = Episode(task, trajectory_path="traj.jsonl")
-
-print(task.brief)                       # what your agent should be told
-
-reply = ep.act("field_metadata", {"field": "alt_value"})
-print(reply["status"], reply["budget_remaining"], reply["observation"])
-
-ep.act("submit", {"finding": {...}})
-print(ep.result["score"], ep.result["feedback"])
-```
-
-Every reply has the same outer shape, whatever the task:
+`--diagnose` 的字段：
 
 ```json
 {
-  "protocol": 1,
-  "status": "ok",
-  "cost_charged": 1,
-  "budget_remaining": {"queries": 24},
-  "observation": {"...": "task-specific"}
+  "kvm": true,
+  "kvm_path": "/dev/kvm",
+  "assets_dir": "/tmp/trace-fc-assets",
+  "files": {
+    "firecracker": true,
+    "kernel": true,
+    "rootfs": true,
+    "guest_agent": true
+  },
+  "paths": {
+    "firecracker": "/tmp/trace-fc-assets/firecracker",
+    "kernel": "/tmp/trace-fc-assets/vmlinux",
+    "rootfs": "/tmp/trace-fc-assets/rootfs.ext4",
+    "guest_agent": "/tmp/trace-fc-assets/guest_agent"
+  },
+  "ready": true,
+  "notes": []
 }
 ```
 
-`status` is `"ok"` or `"error"`. An error is charged but never fatal — a mistyped
-action, an exhausted budget and a malformed submission all come back as something
-you can read and recover from. That is deliberate: an agent that dies on the first
-refusal does badly for reasons unrelated to its reasoning.
+`ready` 为 false 时，`notes` 是字符串列表，写出缺 kvm 还是缺哪个文件。
 
-### 4. Plug in a model
-
-Implement one function in `llm_agent.py`:
-
-```python
-def call_model(system, transcript) -> str:
-    from openai import OpenAI
-    r = OpenAI().chat.completions.create(
-        model="your-model",
-        messages=[{"role": "system", "content": system}] + transcript)
-    return r.choices[0].message.content
-```
-
-Then:
-
-```bash
-python3 run_task.py --task corpus_dedup --agent llm_agent:solve
-```
-
-`llm_agent.solve` plays **any** of the five without knowing anything about them: it
-reads the brief, lists the actions with their costs, and asks for one action at a
-time as JSON. That generality is the point — a real environment hands you a brief
-you have never seen, so an agent that needs per-task code is not an agent.
-
-The docstring has the same five lines for Anthropic and for a plain HTTP endpoint
-with no SDK, so this repo stays dependency-free until you choose otherwise.
-
-### 5. Point your own harness at it
-
-If your framework owns its loop, take the tools and a dispatcher:
-
-```python
-from llm_agent import tools_for
-
-schemas, call = tools_for(ep)     # schemas in the shape OpenAI/Anthropic accept
-# register `schemas` with your framework, route tool calls to `call`
-# your loop ends when ep.done; ep.result holds the score
-```
-
-It holds no state — the episode does — so your loop can retry, branch, or use
-several models and the accounting stays correct.
-
-### 6. Submit your solver
-
-When your harness clears these five, that is the point at which the real
-environments become worth your time. Bring a **harness**, a **model endpoint**, or
-both — all three are supported, and you do not need a model of your own: we can
-provide one through a metered door your harness calls.
-
-- **https://traces.apodex.com/submit-your-solver**
-- **sheng@apodex.com**
-- **brian@apodex.com**
-
-Worth saying explicitly: a good score in this repository is not a submission and is
-not seen by anyone. Nothing here reports back, so if you want to be evaluated, the
-links above are the only way it happens.
-
----
-
-## Trajectories
-
-Every run writes `runs/<task>-<timestamp>/trajectory.jsonl` plus `result.json`. One
-line per action:
+活测试的字段：
 
 ```json
-{"t": 3, "ts": 1787252231.07, "action": "run_all", "params": {"input": "(]"},
- "status": "ok", "cost": 1, "budget_remaining": {"reads": 5, "test_runs": 10},
- "obs_summary": {"returned": {"cand_a": false, "cand_b": true}}}
+{
+  "result": "PASS",
+  "reason": "RestoreState kept /tmp/marker and the sleep process",
+  "diagnose": { "...": "同上一段 diagnose" },
+  "parent_sandbox_id": "01...",
+  "restored_sandbox_id": "01...",
+  "state_id": "01...",
+  "use_uffd": true
+}
 ```
 
-This is the format the real system records. Whatever you build here already emits
-artifacts of the right shape, so nothing has to be rewritten later.
-
-## A note on the scoring
-
-Every task scores itself locally, and the scoring code ships in the same file you
-can read. That is deliberate for practice — reading a scorer is a fast way to learn
-what a task values. It also means these scores are **not adversarially robust**:
-anyone who wants to game them can, trivially. The real environments keep their
-verifier where a solver cannot see it, which is the whole difference between a
-practice score and a measurement.
+`result` 只能是 `PASS`、`FAIL`、`SKIP` 之一。失败时没有那三个 id，`reason` 会写成 `VmmFailed: ...` 或具体哪一步丢了文件/进程。请把整段 JSON 发回来。
 
 ---
 
-## What the real thing adds
+## 代码怎么用
 
-Everything below exists in the real system and is deliberately absent here. This is
-the honest gap, not a teaser.
-
-**Many more environments.** Seventeen in current scope rather than five, spanning
-pretraining data acquisition and filtering, post-training data work, RL recipe
-design, solution verification, real software-engineering tasks, inference
-determinism debugging, clinical trial analysis, and protein and capsid design. They
-are not variations on a theme — each was authored by someone who does that work.
-
-**Real environments, with real data.** Several ship substantial datasets and real
-artifacts: actual open-source repositories with their test suites, real preprint
-corpora, real clinical datasets, real biological assay data. The examples here are
-synthetic because synthetic is all a laptop needs.
-
-**Genuine execution.** Most real environments give your agent a shell in an isolated
-container — read a repository, apply a patch, run its tests, train something, inspect
-what broke. Several provision GPUs through a metered jobs interface. Nothing here has
-a container or a GPU; the tasks are typed queries over generated tables.
-
-**Much tighter episode control.** Per-episode credentials with a two-tier privilege
-split, request idempotency, rate limiting, wall-clock enforcement with reaping,
-metered model access with a frozen price snapshot, per-submitter instance assignment
-that never serves the same task twice, and a hidden verifier the solver cannot read.
-The engine in this repo is 194 lines. The real equivalent is a couple of thousand,
-and the difference is almost entirely this list.
-
-**HDS6 process scoring.** The outcome score answers *did it work*. HDS6 answers
-*was the work sound* — a structured, item-by-item judgement of how a trajectory
-reached its result, scored by a panel. It is why a run can land the right answer and
-still be marked down: for evidence it never gathered, alternatives it never
-considered, or a claim its own logs do not support. Nothing in this repo attempts
-this, and it is usually the more informative of the two numbers.
-
-**Held-out instances.** Real evaluation runs on instances you will never have seen,
-assigned per submitter with no repeats. Practice here is unlimited and repeatable
-precisely because none of it counts.
-
-Running against the real environments is a separate, formal arrangement:
-
-- **https://traces.apodex.com/submit-your-solver**
-- **sheng@apodex.com**
-- **brian@apodex.com**
-
----
-
-## Licence and reuse
-
-Use these as fixtures in your own test suite if useful. They are deterministic, so
-they make stable tests: `load_task("corpus_dedup", seed=7)` is the same task on every
-machine, forever.
-
-```bash
-python3 -m pytest tests/ -q      # 60 tests, no network, no key
 ```
+from ew_examples import FirecrackerConfig, Runtime
+
+rt = Runtime("/tmp/trace-run", firecracker=FirecrackerConfig(
+    bin="/tmp/trace-fc-assets/firecracker",
+    kernel="/tmp/trace-fc-assets/vmlinux",
+    rootfs="/tmp/trace-fc-assets/rootfs.ext4",
+))
+started = rt.start_run("shell", backend="firecracker")
+sid = started["sandbox_id"]
+rt.act(sid, "exec", {"cmd": "echo keepme > /tmp/marker"})
+rt.act(sid, "exec", {"cmd": "sleep 120 &"})
+committed = rt.commit_state(sid)
+restored = rt.restore_state(committed["state_id"])
+rt.act(restored["sandbox_id"], "exec", {"cmd": "cat /tmp/marker"})
+```
+
+不传 `backend` 时走进程内 `episode`（内置 `counter` 任务，只给接口测试用）。`restore_and_replay(state_id)` 默认只解冻；传入 `span_id` 才会再跑 `ReplaySpan`。
+
+规格在 `docs/spec/`。

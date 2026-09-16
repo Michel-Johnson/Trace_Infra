@@ -71,7 +71,33 @@ python3 -m ew_examples.vm_replay --assets /tmp/trace-fc-assets
 
 退出码：`0` 是 PASS，`2` 是 SKIP（没有 kvm 或没有资产，这台机器测不了），`1` 是 FAIL（能启动但恢复后文件或进程丢了，或者 Firecracker 启动失败）。
 
-标准输出是一段 JSON。PASS 时 `reason` 是：`RestoreState kept /tmp/marker and the sleep process`。FAIL 时 `reason` 里会有 `VmmFailed` 或具体缺了哪一步。
+标准输出是一段 JSON，字段如下。
+
+`--diagnose`：
+
+| 字段 | 含义 |
+|---|---|
+| `kvm` | `/dev/kvm` 当前用户能否读写 |
+| `kvm_path` | 设备路径，没有则为 null |
+| `assets_dir` | 资产目录 |
+| `files` | `firecracker` / `kernel` / `rootfs` / `guest_agent` 是否存在 |
+| `paths` | 上面四个文件的绝对路径 |
+| `ready` | kvm 加上 firecracker、内核、rootfs 都齐了才是 true |
+| `notes` | 字符串列表。`ready` 为 false 时写出缺什么 |
+
+活测试（默认命令）：
+
+| 字段 | 含义 |
+|---|---|
+| `result` | `PASS` / `FAIL` / `SKIP` |
+| `reason` | 一句话。PASS 固定为 `RestoreState kept /tmp/marker and the sleep process` |
+| `diagnose` | 同上一段 diagnose 对象 |
+| `parent_sandbox_id` | 冻住之前的 sandbox。仅 PASS |
+| `restored_sandbox_id` | 解冻后的新 sandbox。仅 PASS |
+| `state_id` | 这次 CommitState 的 id。仅 PASS |
+| `use_uffd` | 这次恢复是否先走 UFFD。仅 PASS |
+
+FAIL 时没有那三个 id。`reason` 会带 `VmmFailed:` 或指出 `/tmp/marker`、`sleep` 哪一步没了。把整段 JSON 发回来即可。
 
 默认恢复走 UFFD。若 UFFD 在你机器上失败，代码会把打包的 `memfile` 解成整份内存，再改用 Firecracker 的 File backend 试一次。只想走 File 时：
 

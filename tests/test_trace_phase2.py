@@ -29,9 +29,9 @@ def _tables(conn):
 def test_get_state_returns_snapshot_uri_and_prompt(tmp_path):
     """Acceptance: lookup by state_id finds the snapshot and the prompt."""
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", SEED)
+    started = rt.start_run("counter", SEED)
     sid = started["sandbox_id"]
-    rt.act(sid, "list_candidates", {})
+    rt.act(sid, "peek", {})
     committed = rt.commit_state(sid, prompt=PROMPT)
     got = rt.get_state(committed["state_id"])
     assert got["state_id"] == committed["state_id"]
@@ -53,17 +53,16 @@ def test_get_state_returns_snapshot_uri_and_prompt(tmp_path):
 def test_get_span_returns_full_actions_in_t_order(tmp_path):
     """Acceptance: a span reads every action in order, not the truncated summary."""
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("corpus_procurement", SEED)
+    started = rt.start_run("counter", SEED)
     sid = started["sandbox_id"]
     span_id = rt.episode(sid).span_id
-    first = rt.act(sid, "sample_source", {"source": "src_00", "n": 8})
-    rt.act(sid, "sample_source", {"source": "src_02", "n": 8})
-    rt.act(sid, "preview_package", {"package": "pkg_00"})
+    first = rt.act(sid, "list_items", {})
+    rt.act(sid, "inc", {})
+    rt.act(sid, "peek", {})
     got = rt.get_span(span_id)
     events = got["events"]
     assert [e["t"] for e in events] == [1, 2, 3]
-    assert [e["action"] for e in events] == [
-        "sample_source", "sample_source", "preview_package"]
+    assert [e["action"] for e in events] == ["list_items", "inc", "peek"]
     items = first["observation"]["items"]
     assert len(items) == 8
     assert events[0]["observation"]["items"] == items
@@ -73,8 +72,8 @@ def test_get_span_returns_full_actions_in_t_order(tmp_path):
 
 def test_index_is_sql_not_json_files(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("clinical_signal", SEED)
-    rt.act(started["sandbox_id"], "inspect_study", {})
+    started = rt.start_run("counter", SEED)
+    rt.act(started["sandbox_id"], "inc", {})
     db = os.path.join(str(tmp_path), "index.sqlite")
     assert os.path.isfile(db)
     assert not os.path.isdir(os.path.join(str(tmp_path), "index"))
@@ -95,27 +94,27 @@ def test_new_runtime_on_the_same_root_still_finds_state_and_span(tmp_path):
     """Index and blobs survive a new process. sandbox_id does not."""
     root = str(tmp_path)
     rt = Runtime(root)
-    started = rt.start_run("corpus_dedup", SEED)
+    started = rt.start_run("counter", SEED)
     sid = started["sandbox_id"]
     span_id = rt.episode(sid).span_id
-    rt.act(sid, "inspect_corpus", {})
+    rt.act(sid, "inc", {})
     committed = rt.commit_state(sid, prompt=PROMPT)
     gone = started["sandbox_id"]
     del rt
     again = Runtime(root)
     with pytest.raises(TraceError) as e:
-        again.act(gone, "calibration", {})
+        again.act(gone, "inc", {})
     assert e.value.code == "SandboxGone"
     bundle = again.get_state(committed["state_id"])
     assert bundle["prompt"] == PROMPT
     assert bundle["parent_state_id"] == started["state_id"]
     events = again.get_span(span_id)["events"]
     assert [ev["t"] for ev in events] == [1]
-    assert events[0]["action"] == "inspect_corpus"
+    assert events[0]["action"] == "inc"
     restored = again.restore_state(committed["state_id"])
     assert restored["t"] == 1
     assert restored["prompt"] == PROMPT
-    env = again.act(restored["sandbox_id"], "calibration", {})
+    env = again.act(restored["sandbox_id"], "peek", {})
     assert env["status"] == "ok"
 
 
@@ -130,10 +129,10 @@ def test_postgres_schema_file_declares_the_same_tables():
 
 def test_span_to_state_id_points_at_the_commit_that_closed_it(tmp_path):
     rt = Runtime(str(tmp_path))
-    started = rt.start_run("verify_solutions", SEED)
+    started = rt.start_run("counter", SEED)
     sid = started["sandbox_id"]
     span_id = rt.episode(sid).span_id
-    rt.act(sid, "list_candidates", {})
+    rt.act(sid, "peek", {})
     committed = rt.commit_state(sid, prompt=PROMPT)
     span = rt.get_span(span_id)["span"]
     assert span["from_state_id"] == started["state_id"]

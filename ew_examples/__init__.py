@@ -1,8 +1,6 @@
-"""Example tasks in the shape of an Executable World environment.
+"""Trace infra: record a sandbox, freeze it, restore it, optionally replay acts.
 
-Self-contained: standard library only, no network, no Docker, no account. See
-README.md. The real environments this imitates are not included, and neither is
-any part of their implementation.
+Standard library only. Live Firecracker needs KVM on the test machine.
 """
 from .engine import Action, ActionError, Budget, Episode, Task
 from .tasks import TASKS, load_task
