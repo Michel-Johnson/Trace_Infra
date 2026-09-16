@@ -81,43 +81,40 @@ static int run_cmd(const char *cmd, char **out, uint32_t *out_n,
     }
     close(outp[1]);
     close(errp[1]);
+    fcntl(outp[0], F_SETFL, O_NONBLOCK);
+    fcntl(errp[0], F_SETFL, O_NONBLOCK);
     char *ob = malloc(MAX_OUT);
     char *eb = malloc(MAX_OUT);
     if (!ob || !eb)
         _exit(1);
     uint32_t on = 0, en = 0;
-    for (;;) {
+    int st = 0;
+    int done = 0;
+    while (!done) {
+        pid_t w = waitpid(pid, &st, WNOHANG);
+        if (w == pid)
+            done = 1;
         char buf[4096];
-        ssize_t r = read(outp[0], buf, sizeof buf);
-        if (r > 0) {
+        ssize_t r;
+        while ((r = read(outp[0], buf, sizeof buf)) > 0) {
             uint32_t take = (uint32_t)r;
             if (on + take > MAX_OUT)
                 take = MAX_OUT - on;
             memcpy(ob + on, buf, take);
             on += take;
-            continue;
         }
-        if (r == 0 || (r < 0 && errno != EINTR))
-            break;
-    }
-    for (;;) {
-        char buf[4096];
-        ssize_t r = read(errp[0], buf, sizeof buf);
-        if (r > 0) {
+        while ((r = read(errp[0], buf, sizeof buf)) > 0) {
             uint32_t take = (uint32_t)r;
             if (en + take > MAX_OUT)
                 take = MAX_OUT - en;
             memcpy(eb + en, buf, take);
             en += take;
-            continue;
         }
-        if (r == 0 || (r < 0 && errno != EINTR))
-            break;
+        if (!done)
+            usleep(2000);
     }
     close(outp[0]);
     close(errp[0]);
-    int st = 0;
-    waitpid(pid, &st, 0);
     *out = ob;
     *out_n = on;
     *err = eb;
