@@ -114,6 +114,9 @@ class Episode:
         self._clock = clock
         self._rows: list[dict] = []
         self.trajectory_path = trajectory_path
+        self.run_id: str | None = None
+        self.span_id: str | None = None
+        self.sandbox_id: str | None = None
         if trajectory_path:
             d = os.path.dirname(os.path.abspath(trajectory_path))
             if d:
@@ -152,14 +155,21 @@ class Episode:
         env = {"protocol": PROTOCOL, "status": status, "cost_charged": cost,
                "budget_remaining": self.budget.snapshot()}
         env.update(rest)
-        row = {"t": self.t, "ts": round(self._clock(), 2), "action": name,
-               "params": params, "status": status, "cost": cost,
-               "budget_remaining": env["budget_remaining"]}
+        row = {"protocol": PROTOCOL, "t": self.t, "ts": round(self._clock(), 2),
+               "action": name, "params": params, "status": status, "cost": cost,
+               "budget_remaining": env["budget_remaining"],
+               "observation": rest.get("observation")}
         obs = rest.get("observation")
         if obs is not None:
             row["obs_summary"] = _summarise(obs)
         if "error" in rest:
             row["error"] = rest["error"]
+        if "message" in rest:
+            row["message"] = rest["message"]
+        if self.run_id:
+            row["run_id"] = self.run_id
+            row["span_id"] = self.span_id
+            row["sandbox_id"] = self.sandbox_id
         self._rows.append(row)
         if self.trajectory_path:
             with open(self.trajectory_path, "a") as fh:
