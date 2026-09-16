@@ -240,10 +240,10 @@ class Runtime:
             "prompt_uri": prompt_uri,
         }
 
-    def restore_state(self, state_id: str) -> dict:
+    def restore_state(self, state_id: str, *, use_uffd: bool = True) -> dict:
         st = self.store.get_state(state_id)
         if st["backend"] == FC_BACKEND:
-            return self._fc_restore(st)
+            return self._fc_restore(st, use_uffd=use_uffd)
         ep = _load_episode(self.store.read_episode(state_id), clock=self._clock)
         sandbox_id = new_id()
         box = _Box(
@@ -265,6 +265,37 @@ class Runtime:
             "t": st["t"],
             "backend": st["backend"],
             "prompt": self.store.read_prompt(st.get("prompt_uri")),
+        }
+
+    def restore_and_replay(self, state_id: str, *,
+                           span_id: str | None = None,
+                           stop_before_t: int | None = None,
+                           use_uffd: bool = True) -> dict:
+        """Thaw `state_id`. Optionally re-run a recorded span after that.
+
+        RestoreState is the freeze/restore. ReplaySpan is not a substitute:
+        it executes the old commands again. Omit `span_id` to only thaw.
+        """
+        restored = self.restore_state(state_id, use_uffd=use_uffd)
+        replay = None
+        if span_id is not None:
+            if stop_before_t is None:
+                span = self.store.get_span(span_id)
+                index = self.store.list_span_index(span_id)
+                if index:
+                    stop_before_t = index[-1]["t"] + 1
+                else:
+                    stop_before_t = span["t_start"]
+            replay = self.replay_span(
+                restored["sandbox_id"], span_id, stop_before_t)
+        return {
+            "sandbox_id": restored["sandbox_id"],
+            "state_id": restored["state_id"],
+            "run_id": restored["run_id"],
+            "t": restored["t"] if replay is None else replay["last_t"],
+            "backend": restored["backend"],
+            "restore": restored,
+            "replay": replay,
         }
 
     def replay_span(self, sandbox_id: str, span_id: str, stop_before_t: int) -> dict:
@@ -550,7 +581,7 @@ class Runtime:
             header["memory"] = DirtyMemfile(mem_path).header_memory()
         return header
 
-    def _fc_restore(self, st: dict) -> dict:
+    def _fc_restore(self, st: dict, *, use_uffd: bool = True) -> dict:
         if self.firecracker is None:
             raise TraceError("VmmFailed", "Runtime was not given a FirecrackerConfig")
         sandbox_id = new_id()
@@ -575,7 +606,7 @@ class Runtime:
             os.path.join(snap_dir, "snapfile"),
             os.path.join(snap_dir, "memfile"),
             rootfs,
-            use_uffd=True,
+            use_uffd=use_uffd,
         )
         box = _Box(
             sandbox_id=sandbox_id,

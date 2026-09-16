@@ -30,6 +30,8 @@ Guest 里的 `guest_agent` 听 vsock 5252。一条 span 事件的 action 是 `ex
 
 活 VM 的 jail 在 `{root}/live/{sandbox_id}/`，磁盘文件名是相对路径 `rootfs.ext4`，这样 Restore 换目录时 snapfile 里的盘路径还能对上。
 
+本机怎么准备资产、怎么跑活测试，见 `docs/spec/vm-replay-test.md`。
+
 ## 验收对照
 
 恢复后，当时在跑的进程还在，当时写过的文件还在。没有工作的 KVM（包括嵌套虚拟化失败）时，集成测试跳过，不假装启动成功。

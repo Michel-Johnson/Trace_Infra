@@ -23,7 +23,10 @@ from dataclasses import dataclass
 from typing import Any
 
 from .store import TraceError
-from .uffd import UffdHandler, capture_dirty_memfile, snapshot_load_body
+from .uffd import (
+    DirtyMemfile, UffdHandler, capture_dirty_memfile, file_load_body,
+    snapshot_load_body,
+)
 
 AGENT_PORT = 5252
 BACKEND = "firecracker"
@@ -187,8 +190,36 @@ class FirecrackerVM:
                 f"{e}; log: {self._log_tail()}")
         self._wait_agent()
 
+    def _put_load(self, body: dict) -> None:
+        _must(self.api_sock, "PUT", "/snapshot/load", body, timeout=30.0)
+
+    def _load_uffd(self, jail_mem: str) -> None:
+        uffd_rel = "uffd.sock"
+        handler = UffdHandler(os.path.join(self.jail, uffd_rel), jail_mem)
+        handler.start()
+        self.uffd = handler
+        self._put_load(snapshot_load_body(uffd_rel, resume=True))
+
+    def _load_file(self) -> None:
+        self._put_load(file_load_body(resume=True))
+
+    def _stop_uffd(self) -> None:
+        if self.uffd is None:
+            return
+        try:
+            self.uffd.stop()
+        except Exception:
+            pass
+        self.uffd = None
+
     def load_snapshot(self, snapfile: str, memfile: str, rootfs: str,
                       *, use_uffd: bool = True, share_mem: bool = False) -> None:
+        """Restore snapfile + memfile. Uffd first; packed memfile unpacks for File.
+
+        Firecracker's File backend cannot read a TDIF packed memfile. If Uffd
+        load fails, the packed file is unpacked to a dense dump and retried.
+        `share_mem` keeps the forkd hardlink and always uses File.
+        """
         if os.path.abspath(rootfs) != os.path.abspath(self.rootfs_abs):
             shutil.copy2(rootfs, self.rootfs_abs)
         jail_snap = os.path.join(self.jail, "snapfile")
@@ -203,27 +234,31 @@ class FirecrackerVM:
         elif os.path.abspath(memfile) != os.path.abspath(jail_mem):
             shutil.copy2(memfile, jail_mem)
         self._spawn()
+        uffd_err: Exception | None = None
         if use_uffd:
-            uffd_rel = "uffd.sock"
-            handler = UffdHandler(os.path.join(self.jail, uffd_rel), jail_mem)
-            handler.start()
-            self.uffd = handler
-            body = snapshot_load_body(uffd_rel, resume=True)
-        else:
-            body = {
-                "snapshot_path": "snapfile",
-                "mem_backend": {"backend_type": "File", "backend_path": "memfile"},
-                "resume_vm": True,
-                "track_dirty_pages": True,
-            }
+            try:
+                self._load_uffd(jail_mem)
+                self._wait_agent()
+                return
+            except Exception as e:
+                uffd_err = e
+                self._stop_uffd()
+                self.kill()
+                DirtyMemfile(jail_mem).materialize_dense(jail_mem)
+                self._spawn()
+        elif not share_mem:
+            DirtyMemfile(jail_mem).materialize_dense(jail_mem)
         try:
-            _must(self.api_sock, "PUT", "/snapshot/load", body, timeout=30.0)
-        except Exception:
-            if self.uffd is not None:
-                self.uffd.stop()
-                self.uffd = None
-            raise
-        self._wait_agent()
+            self._load_file()
+            self._wait_agent()
+        except Exception as file_err:
+            self.kill()
+            if uffd_err is None:
+                raise
+            raise TraceError(
+                "VmmFailed",
+                f"Uffd load failed ({uffd_err}); File fallback failed ({file_err})"
+            ) from file_err
 
     def _wait_agent(self, seconds: float = 20.0) -> None:
         path = self.vsock_host()

@@ -13,6 +13,7 @@ import ctypes.util
 import json
 import os
 import select
+import shutil
 import socket
 import struct
 import threading
@@ -200,6 +201,30 @@ class DirtyMemfile:
             "dirty": sorted(self._index) if self.packed else None,
         }
 
+    def materialize_dense(self, dest: str) -> str:
+        """Write a contiguous RAM dump. Firecracker's File backend needs this.
+
+        Packed TDIF memfiles only work with the Uffd handler. Same path as dest
+        is replaced atomically after the dense file is fully written.
+        """
+        dest = os.path.abspath(dest)
+        os.makedirs(os.path.dirname(dest) or ".", exist_ok=True)
+        if not self.packed:
+            if os.path.abspath(self.path) != dest:
+                shutil.copy2(self.path, dest)
+            return dest
+        tmp = dest + ".dense.tmp"
+        zero = b"\x00" * self.page_size
+        with open(tmp, "wb") as fh:
+            for i in range(self.n_pages):
+                off = self._index.get(i)
+                if off is None:
+                    fh.write(zero)
+                else:
+                    fh.write(self.page(i))
+        os.replace(tmp, dest)
+        return dest
+
 
 def send_uffd(sock: socket.socket, mappings: list[dict], uffd: int) -> None:
     payload = json.dumps(mappings).encode()
@@ -232,6 +257,16 @@ def snapshot_load_body(uffd_rel: str = "uffd.sock", *,
     return {
         "snapshot_path": "snapfile",
         "mem_backend": {"backend_type": "Uffd", "backend_path": uffd_rel},
+        "resume_vm": resume,
+        "track_dirty_pages": True,
+    }
+
+
+def file_load_body(*, resume: bool = True) -> dict:
+    """PUT /snapshot/load body when memory is a dense memfile on disk."""
+    return {
+        "snapshot_path": "snapfile",
+        "mem_backend": {"backend_type": "File", "backend_path": "memfile"},
         "resume_vm": resume,
         "track_dirty_pages": True,
     }

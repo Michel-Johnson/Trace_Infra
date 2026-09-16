@@ -10,12 +10,13 @@ from .store import LocalStore, TraceError
 from .trace import Runtime, new_id
 from .fc import FirecrackerConfig
 from .layers import LayeredDisk
-from .uffd import UffdHandler, snapshot_load_body
+from .uffd import UffdHandler, file_load_body, snapshot_load_body
 from .forkd import ParentImage, map_private
 from .analytics import ClickHouse
 from .httpapi import serve
 
 __all__ = ["Action", "ActionError", "Budget", "Episode", "Task", "TASKS",
            "load_task", "LocalStore", "Runtime", "TraceError", "new_id",
-           "FirecrackerConfig", "LayeredDisk", "UffdHandler", "snapshot_load_body",
+           "FirecrackerConfig", "LayeredDisk", "UffdHandler",
+           "snapshot_load_body", "file_load_body",
            "ParentImage", "map_private", "ClickHouse", "serve"]
