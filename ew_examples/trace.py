@@ -1,6 +1,7 @@
-"""Phase 1: episode-backend RestoreState / ReplaySpan / Branch / CommitState.
+"""Episode-backend RestoreState / ReplaySpan / Branch / CommitState.
 
-Local directories follow the S3 key layout in docs/spec/phase-0.md. No network.
+Index is SQL (sqlite locally, Postgres schema in docs/spec/schema.sql).
+Blobs follow the S3 key layout in docs/spec/phase-0.md. No network.
 """
 from __future__ import annotations
 
@@ -10,29 +11,15 @@ import json
 import os
 import pickle
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable
 
 from .engine import Budget, Episode, PROTOCOL
+from .store import LocalStore, TraceError
 from .tasks import load_task
 
 BACKEND = "episode"
 _CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
-
-
-class TraceError(Exception):
-    """A trace API refusal. `code` matches docs/spec/phase-0.md."""
-
-    def __init__(self, code: str, message: str, **extra: Any):
-        super().__init__(message)
-        self.code = code
-        self.message = message
-        self.extra = extra
-
-    def as_dict(self) -> dict:
-        out = {"error": self.code, "message": self.message}
-        out.update(self.extra)
-        return out
 
 
 def new_id() -> str:
@@ -47,19 +34,6 @@ def new_id() -> str:
     return "".join(chars)
 
 
-def _write_json(path: str, obj: Any) -> None:
-    d = os.path.dirname(path)
-    if d:
-        os.makedirs(d, exist_ok=True)
-    with open(path, "w") as fh:
-        json.dump(obj, fh, ensure_ascii=False, indent=2)
-
-
-def _read_json(path: str) -> Any:
-    with open(path) as fh:
-        return json.load(fh)
-
-
 @dataclass
 class _Box:
     sandbox_id: str
@@ -68,104 +42,6 @@ class _Box:
     span_id: str
     last_state_id: str | None = None
     dirty: bool = False
-
-
-class LocalStore:
-    """Filesystem layout equal to the S3 prefixes in the phase-0 spec."""
-
-    def __init__(self, root: str):
-        self.root = os.path.abspath(root)
-        os.makedirs(self.root, exist_ok=True)
-
-    def snapshot_uri(self, state_id: str) -> str:
-        return os.path.join(self.root, "snapshots", state_id) + os.sep
-
-    def prompt_uri(self, run_id: str, state_id: str) -> str:
-        return os.path.join(self.root, "runs", run_id, "prompts", f"{state_id}.json")
-
-    def event_uri(self, run_id: str, span_id: str, t: int) -> str:
-        return os.path.join(
-            self.root, "runs", run_id, "spans", span_id, "events", f"{t:08d}.json")
-
-    def _idx(self, kind: str, key: str) -> str:
-        return os.path.join(self.root, "index", kind, f"{key}.json")
-
-    def put_run(self, rec: dict) -> None:
-        _write_json(self._idx("runs", rec["run_id"]), rec)
-
-    def get_run(self, run_id: str) -> dict:
-        path = self._idx("runs", run_id)
-        if not os.path.isfile(path):
-            raise TraceError("StateNotFound", f"no run {run_id}")
-        return _read_json(path)
-
-    def put_state(self, rec: dict) -> None:
-        _write_json(self._idx("states", rec["state_id"]), rec)
-
-    def get_state(self, state_id: str) -> dict:
-        path = self._idx("states", state_id)
-        if not os.path.isfile(path):
-            raise TraceError("StateNotFound", f"no state {state_id}")
-        return _read_json(path)
-
-    def put_span(self, rec: dict) -> None:
-        _write_json(self._idx("spans", rec["span_id"]), rec)
-
-    def get_span(self, span_id: str) -> dict:
-        path = self._idx("spans", span_id)
-        if not os.path.isfile(path):
-            raise TraceError("SpanNotFound", f"no span {span_id}")
-        return _read_json(path)
-
-    def put_span_index(self, span_id: str, t: int, rec: dict) -> None:
-        _write_json(os.path.join(self.root, "index", "span_index", span_id, f"{t:08d}.json"), rec)
-
-    def list_span_index(self, span_id: str) -> list[dict]:
-        d = os.path.join(self.root, "index", "span_index", span_id)
-        if not os.path.isdir(d):
-            return []
-        rows = [_read_json(os.path.join(d, name)) for name in sorted(os.listdir(d))]
-        rows.sort(key=lambda r: r["t"])
-        return rows
-
-    def write_event(self, run_id: str, span_id: str, row: dict) -> str:
-        uri = self.event_uri(run_id, span_id, row["t"])
-        _write_json(uri, row)
-        self.put_span_index(span_id, row["t"], {
-            "span_id": span_id,
-            "t": row["t"],
-            "event_uri": uri,
-            "action": row["action"],
-            "status": row["status"],
-        })
-        return uri
-
-    def read_event(self, uri: str) -> dict:
-        return _read_json(uri)
-
-    def write_snapshot(self, state_id: str, metadata: dict, episode_obj: dict) -> str:
-        base = os.path.join(self.root, "snapshots", state_id)
-        _write_json(os.path.join(base, "metadata.json"), metadata)
-        _write_json(os.path.join(base, "episode.json"), episode_obj)
-        return self.snapshot_uri(state_id)
-
-    def read_episode(self, state_id: str) -> dict:
-        path = os.path.join(self.root, "snapshots", state_id, "episode.json")
-        if not os.path.isfile(path):
-            raise TraceError("StateNotFound", f"no episode snapshot for {state_id}")
-        return _read_json(path)
-
-    def write_prompt(self, run_id: str, state_id: str, prompt: dict) -> str:
-        uri = self.prompt_uri(run_id, state_id)
-        _write_json(uri, prompt)
-        return uri
-
-    def read_prompt(self, uri: str | None) -> dict | None:
-        if not uri:
-            return None
-        if not os.path.isfile(uri):
-            return None
-        return _read_json(uri)
 
 
 def _dump_episode(ep: Episode, task_id: str, seed: int) -> dict:
@@ -294,11 +170,6 @@ class Runtime:
         state_id = new_id()
         parent = box.last_state_id
         from_span_id = box.span_id if box.dirty and box.span_id else None
-        if from_span_id:
-            span = self.store.get_span(from_span_id)
-            span["to_state_id"] = state_id
-            span["t_end"] = box.episode.t if box.episode.t else None
-            self.store.put_span(span)
         prompt_uri = None
         if prompt is not None:
             prompt_uri = self.store.write_prompt(box.run_id, state_id, prompt)
@@ -325,7 +196,13 @@ class Runtime:
             "budget": box.episode.budget.snapshot(),
             "created_at": self._clock(),
         }
+        # State row first so spans.to_state_id can reference it.
         self.store.put_state(rec)
+        if from_span_id:
+            span = self.store.get_span(from_span_id)
+            span["to_state_id"] = state_id
+            span["t_end"] = box.episode.t if box.episode.t else None
+            self.store.put_span(span)
         box.last_state_id = state_id
         box.dirty = False
         self._attach(box.episode, box.sandbox_id, box.run_id, "")
@@ -342,9 +219,7 @@ class Runtime:
 
     def restore_state(self, state_id: str) -> dict:
         st = self.store.get_state(state_id)
-        run = self.store.get_run(st["run_id"])
-        blob = self.store.read_episode(state_id)
-        ep = _load_episode(blob, clock=self._clock)
+        ep = _load_episode(self.store.read_episode(state_id), clock=self._clock)
         sandbox_id = new_id()
         box = _Box(
             sandbox_id=sandbox_id,
@@ -446,6 +321,13 @@ class Runtime:
             "parent_state_id": parent_state_id,
             "children": children,
         }
+
+    def get_state(self, state_id: str) -> dict:
+        """Index row plus prompt bytes. Snapshot itself stays in object storage."""
+        st = self.store.get_state(state_id)
+        out = dict(st)
+        out["prompt"] = self.store.read_prompt(st.get("prompt_uri"))
+        return out
 
     def get_span(self, span_id: str) -> dict:
         span = self.store.get_span(span_id)

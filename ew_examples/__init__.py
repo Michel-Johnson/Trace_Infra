@@ -6,7 +6,8 @@ any part of their implementation.
 """
 from .engine import Action, ActionError, Budget, Episode, Task
 from .tasks import TASKS, load_task
-from .trace import LocalStore, Runtime, TraceError, new_id
+from .store import LocalStore, TraceError
+from .trace import Runtime, new_id
 
 __all__ = ["Action", "ActionError", "Budget", "Episode", "Task", "TASKS",
            "load_task", "LocalStore", "Runtime", "TraceError", "new_id"]

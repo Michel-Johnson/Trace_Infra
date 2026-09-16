@@ -146,7 +146,7 @@ ReplaySpan 不调模型，不写新的 state。
 
 ## 2. Postgres
 
-第 2 阶段落地。第 1 阶段可用同等字段的本地 JSON，列名保持一致。
+第 2 阶段落地（见 `docs/spec/phase-2.md`）。第 1 阶段曾用同等字段的本地 JSON；第 2 阶段改为 SQL，列名保持一致。
 
 ```sql
 CREATE TABLE runs (
