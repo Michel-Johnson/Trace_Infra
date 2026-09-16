@@ -1,20 +1,7 @@
-"""The episode loop: budgets, action dispatch, trajectory recording, scoring.
+"""Episode loop for the in-process backend: budget, act, trajectory, score.
 
-Self-contained on purpose. This package shares no code with the Executable World
-implementation it imitates; it exists so anyone can see the *shape* of an EW task
-and drive one from a laptop with nothing installed. The action names, the reply
-envelope and the trajectory format match the real thing, so a harness built here
-needs no changes to run against a real environment later.
-
-Three ideas carry over from the real system and are worth understanding, because
-they are what make these tasks different from a chat benchmark:
-
-  * You cannot see the world. Everything is behind typed actions, and every action
-    costs something from a finite budget. Deciding what to look at IS the task.
-  * The reply is always the same envelope. Only `observation` differs per task, so
-    one parser handles every task you will ever be given.
-  * A submission is executed against hidden truth. You are scored on what your plan
-    actually lands, not on what you claimed it would.
+Firecracker RestoreState does not use this. This module is the other backend:
+pickle a Task, then Restore / Replay / Branch without a microVM.
 """
 from __future__ import annotations
 
@@ -114,6 +101,9 @@ class Episode:
         self._clock = clock
         self._rows: list[dict] = []
         self.trajectory_path = trajectory_path
+        self.run_id: str | None = None
+        self.span_id: str | None = None
+        self.sandbox_id: str | None = None
         if trajectory_path:
             d = os.path.dirname(os.path.abspath(trajectory_path))
             if d:
@@ -152,14 +142,21 @@ class Episode:
         env = {"protocol": PROTOCOL, "status": status, "cost_charged": cost,
                "budget_remaining": self.budget.snapshot()}
         env.update(rest)
-        row = {"t": self.t, "ts": round(self._clock(), 2), "action": name,
-               "params": params, "status": status, "cost": cost,
-               "budget_remaining": env["budget_remaining"]}
+        row = {"protocol": PROTOCOL, "t": self.t, "ts": round(self._clock(), 2),
+               "action": name, "params": params, "status": status, "cost": cost,
+               "budget_remaining": env["budget_remaining"],
+               "observation": rest.get("observation")}
         obs = rest.get("observation")
         if obs is not None:
             row["obs_summary"] = _summarise(obs)
         if "error" in rest:
             row["error"] = rest["error"]
+        if "message" in rest:
+            row["message"] = rest["message"]
+        if self.run_id:
+            row["run_id"] = self.run_id
+            row["span_id"] = self.span_id
+            row["sandbox_id"] = self.sandbox_id
         self._rows.append(row)
         if self.trajectory_path:
             with open(self.trajectory_path, "a") as fh:
