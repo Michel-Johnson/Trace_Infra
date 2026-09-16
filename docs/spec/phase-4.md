@@ -1,6 +1,6 @@
 # 第 4 阶段：overlaybd 磁盘分层和 UFFD 内存懒加载
 
-根盘换成 overlaybd 形状：一份只读 base，每个 sandbox 一份 upper。内存恢复改成 userfaultfd 按页加载。`memfile` 只保存相对全零页的 dirty pages。forkd 仍是第 5 阶段。example 任务仍走 `backend=episode`。本仓库保持标准库。
+根盘换成 overlaybd 形状：一份只读 base，每个 sandbox 一份 upper。内存恢复改成 userfaultfd 按页加载。`memfile` 只保存相对全零页的 dirty pages。同机 `Branch` 见第 5 阶段。example 任务仍走 `backend=episode`。本仓库保持标准库。
 
 本环境通常没有 `overlaybd-ublk` 和 `/dev/ublk-control`。没有 ublk 时，两台 sandbox 仍然共享同一份 base 的 inode；Firecracker 看到的是按层物化出的私有文件。有 ublk 时走 `LayeredDisk.attach_ublk()`。
 

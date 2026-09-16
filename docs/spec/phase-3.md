@@ -12,7 +12,7 @@ rt.commit_state(sandbox_id)
 rt.restore_state(state_id)
 ```
 
-`Branch` 对 firecracker 返回 `BranchFailed`：那是第 5 阶段的 forkd。
+`Branch` 对没有活 VM 的 firecracker sandbox 返回 `BranchFailed`。同机 CoW 分叉见第 5 阶段 `docs/spec/phase-5.md`。
 
 ## 快照文件
 

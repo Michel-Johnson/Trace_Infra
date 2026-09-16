@@ -70,7 +70,7 @@ def test_firecracker_backend_needs_config(tmp_path):
     assert e.value.code == "VmmFailed"
 
 
-def test_firecracker_branch_is_not_phase3(tmp_path):
+def test_firecracker_branch_needs_live_parent(tmp_path):
     rt = Runtime(str(tmp_path))
     box_id = "x"
     from ew_examples.trace import _Box, FC_BACKEND

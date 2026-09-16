@@ -10,12 +10,14 @@ import copy
 import json
 import os
 import pickle
+import shutil
 import time
 from dataclasses import dataclass
 from typing import Any, Callable
 
 from .engine import Budget, Episode, PROTOCOL
 from .fc import BACKEND as FC_BACKEND, FirecrackerConfig, FirecrackerVM
+from .forkd import ParentImage, freeze_disk, place_child
 from .layers import LayeredDisk, ensure_base
 from .store import LocalStore, TraceError
 from .tasks import load_task
@@ -303,12 +305,10 @@ class Runtime:
 
     def branch(self, sandbox_id: str, n: int) -> dict:
         box = self._box(sandbox_id)
-        if box.backend == FC_BACKEND:
-            raise TraceError(
-                "BranchFailed",
-                "firecracker Branch is phase 5 (forkd); copy-restore is not CoW")
         if n < 1 or n > 100:
             raise TraceError("BranchFailed", f"n must be 1..100, got {n}")
+        if box.backend == FC_BACKEND:
+            return self._fc_branch(box, n)
         parent_state_id = None if box.dirty else box.last_state_id
         children: list[dict] = []
         for i in range(n):
@@ -593,4 +593,66 @@ class Runtime:
             "t": st["t"],
             "backend": FC_BACKEND,
             "prompt": self.store.read_prompt(st.get("prompt_uri")),
+        }
+
+    def _fc_branch(self, box: _Box, n: int) -> dict:
+        if box.vm is None:
+            raise TraceError(
+                "BranchFailed", "forkd needs a live parent vm to BRANCH")
+        parent_state_id = None if box.dirty else box.last_state_id
+        dest = os.path.join(self.store.root, "live", box.sandbox_id, "fork", new_id())
+        os.makedirs(dest, exist_ok=True)
+        snapfile = os.path.join(dest, "snapfile")
+        memfile = os.path.join(dest, "memfile")
+        box.vm.pause()
+        try:
+            box.vm.create_snapshot(snapfile, memfile, pack=False)
+        except Exception:
+            try:
+                box.vm.resume()
+            except Exception:
+                pass
+            raise
+        box.vm.resume()
+        disk = None
+        if box.disk is not None:
+            disk = freeze_disk(box.disk, os.path.join(dest, "upper"),
+                               box.vm.rootfs_abs)
+        image = ParentImage(dir=dest, memfile=memfile, snapfile=snapfile, disk=disk)
+        children: list[dict] = []
+        for i in range(n):
+            try:
+                child_id = new_id()
+                jail = os.path.join(self.store.root, "live", child_id)
+                placed = place_child(image, child_id, jail)
+                vm = FirecrackerVM(box.vm.cfg, jail)
+                rootfs = vm.rootfs_abs
+                if placed.disk is not None:
+                    placed.disk.backing_for_vmm(rootfs)
+                elif os.path.isfile(box.vm.rootfs_abs):
+                    shutil.copy2(box.vm.rootfs_abs, rootfs)
+                vm.load_snapshot(
+                    placed.snapfile or snapfile, placed.memfile, rootfs,
+                    share_mem=True)
+                child = _Box(
+                    sandbox_id=child_id,
+                    run_id=box.run_id,
+                    backend=FC_BACKEND,
+                    vm=vm,
+                    disk=placed.disk,
+                    t=box.t,
+                    last_state_id=box.last_state_id,
+                    dirty=box.dirty,
+                    span_id="",
+                )
+                self._boxes[child_id] = child
+                if child.last_state_id:
+                    self._open_span(child, child.last_state_id)
+                children.append({"sandbox_id": child_id, "index": i})
+            except Exception as e:
+                children.append({"index": i, "error": "BranchFailed", "message": str(e)})
+        return {
+            "parent_sandbox_id": box.sandbox_id,
+            "parent_state_id": parent_state_id,
+            "children": children,
         }

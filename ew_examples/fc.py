@@ -188,12 +188,19 @@ class FirecrackerVM:
         self._wait_agent()
 
     def load_snapshot(self, snapfile: str, memfile: str, rootfs: str,
-                      *, use_uffd: bool = True) -> None:
+                      *, use_uffd: bool = True, share_mem: bool = False) -> None:
         if os.path.abspath(rootfs) != os.path.abspath(self.rootfs_abs):
             shutil.copy2(rootfs, self.rootfs_abs)
-        shutil.copy2(snapfile, os.path.join(self.jail, "snapfile"))
+        jail_snap = os.path.join(self.jail, "snapfile")
+        if os.path.abspath(snapfile) != os.path.abspath(jail_snap):
+            shutil.copy2(snapfile, jail_snap)
         jail_mem = os.path.join(self.jail, "memfile")
-        if os.path.abspath(memfile) != os.path.abspath(jail_mem):
+        if share_mem:
+            from .forkd import hardlink_cow
+            if os.path.abspath(memfile) != os.path.abspath(jail_mem):
+                hardlink_cow(memfile, jail_mem)
+            use_uffd = False
+        elif os.path.abspath(memfile) != os.path.abspath(jail_mem):
             shutil.copy2(memfile, jail_mem)
         self._spawn()
         if use_uffd:
@@ -245,7 +252,7 @@ class FirecrackerVM:
     def resume(self) -> None:
         _must(self.api_sock, "PATCH", "/vm", {"state": "Resumed"})
 
-    def create_snapshot(self, snapfile: str, memfile: str) -> None:
+    def create_snapshot(self, snapfile: str, memfile: str, *, pack: bool = True) -> None:
         jail_snap = os.path.join(self.jail, "snapfile")
         jail_mem = os.path.join(self.jail, "memfile")
         _must(self.api_sock, "PUT", "/snapshot/create", {
@@ -255,13 +262,16 @@ class FirecrackerVM:
         }, timeout=60.0)
         os.makedirs(os.path.dirname(snapfile), exist_ok=True)
         shutil.copy2(jail_snap, snapfile)
-        full_mem = memfile + ".full"
-        try:
-            shutil.copy2(jail_mem, full_mem)
-            capture_dirty_memfile(full_mem, memfile)
-        finally:
-            if os.path.isfile(full_mem):
-                os.unlink(full_mem)
+        if pack:
+            full_mem = memfile + ".full"
+            try:
+                shutil.copy2(jail_mem, full_mem)
+                capture_dirty_memfile(full_mem, memfile)
+            finally:
+                if os.path.isfile(full_mem):
+                    os.unlink(full_mem)
+        else:
+            shutil.copy2(jail_mem, memfile)
 
     def kill(self) -> None:
         if self.uffd is not None:
