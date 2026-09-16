@@ -191,7 +191,7 @@ CREATE TABLE span_index (
 );
 ```
 
-`states.budget` 对应 `Budget.snapshot()`。`span_index` 只存检索字段；完整事件在 S3。ClickHouse 第 6 阶段再加，不进第 0 到 5 的验收。
+`states.budget` 对应 `Budget.snapshot()`。`span_index` 只存检索字段；完整事件在 S3。ClickHouse 第 6 阶段落地，见 `docs/spec/phase-6.md`。
 
 活着的 sandbox 只存在编排进程内存里，不进 Postgres。
 

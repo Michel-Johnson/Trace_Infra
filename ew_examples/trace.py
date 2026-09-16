@@ -15,6 +15,7 @@ import time
 from dataclasses import dataclass
 from typing import Any, Callable
 
+from .analytics import ClickHouse
 from .engine import Budget, Episode, PROTOCOL
 from .fc import BACKEND as FC_BACKEND, FirecrackerConfig, FirecrackerVM
 from .forkd import ParentImage, freeze_disk, place_child
@@ -103,8 +104,11 @@ class Runtime:
     """In-process episode backend for the phase-0 APIs."""
 
     def __init__(self, root: str, *, clock: Callable[[], float] = time.time,
-                 firecracker: FirecrackerConfig | None = None):
-        self.store = LocalStore(root)
+                 firecracker: FirecrackerConfig | None = None,
+                 objects: str | None = None):
+        self.store = LocalStore(root, objects=objects)
+        self.analytics = ClickHouse(os.path.join(self.store.root, "clickhouse.sqlite"))
+        self.store.on_event = self.analytics.ingest_row
         self._clock = clock
         self._boxes: dict[str, _Box] = {}
         self.firecracker = firecracker
@@ -401,7 +405,7 @@ class Runtime:
             raise TraceError("VmmFailed", "Runtime was not given a FirecrackerConfig")
         run_id = new_id()
         sandbox_id = new_id()
-        jail = os.path.join(self.store.root, "live", sandbox_id)
+        jail = os.path.join(self.store.live_root, "live", sandbox_id)
         vm = FirecrackerVM(self.firecracker, jail)
         _base_id, base_path = self._shared_base()
         disk = LayeredDisk(base_path, os.path.join(jail, "upper"))
@@ -550,7 +554,7 @@ class Runtime:
         if self.firecracker is None:
             raise TraceError("VmmFailed", "Runtime was not given a FirecrackerConfig")
         sandbox_id = new_id()
-        jail = os.path.join(self.store.root, "live", sandbox_id)
+        jail = os.path.join(self.store.live_root, "live", sandbox_id)
         snap_dir = self.store.fc_dir(st["state_id"])
         vm = FirecrackerVM(self.firecracker, jail)
         header_path = os.path.join(snap_dir, "header")
@@ -600,7 +604,7 @@ class Runtime:
             raise TraceError(
                 "BranchFailed", "forkd needs a live parent vm to BRANCH")
         parent_state_id = None if box.dirty else box.last_state_id
-        dest = os.path.join(self.store.root, "live", box.sandbox_id, "fork", new_id())
+        dest = os.path.join(self.store.live_root, "live", box.sandbox_id, "fork", new_id())
         os.makedirs(dest, exist_ok=True)
         snapfile = os.path.join(dest, "snapfile")
         memfile = os.path.join(dest, "memfile")
@@ -623,7 +627,7 @@ class Runtime:
         for i in range(n):
             try:
                 child_id = new_id()
-                jail = os.path.join(self.store.root, "live", child_id)
+                jail = os.path.join(self.store.live_root, "live", child_id)
                 placed = place_child(image, child_id, jail)
                 vm = FirecrackerVM(box.vm.cfg, jail)
                 rootfs = vm.rootfs_abs

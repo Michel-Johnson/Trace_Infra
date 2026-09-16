@@ -102,17 +102,26 @@ def _budget_out(raw: Any) -> dict:
 
 
 class LocalStore:
-    """Blobs on disk (S3 keys). Index in sqlite (Postgres tables)."""
+    """Blobs on disk (S3 keys). Index in sqlite (Postgres tables).
 
-    def __init__(self, root: str):
-        self.root = os.path.abspath(root)
+    `root` is the object-store prefix (snapshots, runs, index). `live_root`
+    holds per-node jails. When they differ, two nodes can share objects.
+    """
+
+    def __init__(self, root: str, *, objects: str | None = None,
+                 live_root: str | None = None):
+        self.live_root = os.path.abspath(live_root or root)
+        self.root = os.path.abspath(objects or root)
+        os.makedirs(self.live_root, exist_ok=True)
         os.makedirs(self.root, exist_ok=True)
         self.db_path = os.path.join(self.root, "index.sqlite")
-        self.conn = sqlite3.connect(self.db_path)
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30)
         self.conn.row_factory = sqlite3.Row
         self.conn.execute("PRAGMA foreign_keys = ON")
+        self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.executescript(SQLITE_SCHEMA)
         self.conn.commit()
+        self.on_event = None
 
     def snapshot_uri(self, state_id: str) -> str:
         return os.path.join(self.root, "snapshots", state_id) + os.sep
@@ -209,6 +218,8 @@ class LocalStore:
             "action": row["action"],
             "status": row["status"],
         })
+        if self.on_event is not None:
+            self.on_event(row, uri)
         return uri
 
     def read_event(self, uri: str) -> dict:
