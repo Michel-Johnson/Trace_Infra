@@ -129,7 +129,7 @@ def test_restore_keeps_files_and_processes(tmp_path):
     bg = rt.act(sid, "exec", {"cmd": "sleep 120 & echo $!"})
     assert bg["status"] == "ok"
     committed = rt.commit_state(sid, prompt={"system": "fc", "transcript": []})
-    for name in ("snapfile", "memfile", "rootfs", "header", "metadata.json"):
+    for name in ("snapfile", "memfile", "upper", "header", "metadata.json"):
         assert os.path.isfile(os.path.join(committed["snapshot_uri"], name))
     restored = rt.restore_state(committed["state_id"])
     assert restored["backend"] == "firecracker"

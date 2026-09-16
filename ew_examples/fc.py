@@ -3,6 +3,10 @@
 Talks to the Firecracker HTTP API over a Unix socket. Guest commands go
 through vsock to ew_examples/guest_agent.c. Nested KVM is required to boot;
 this module still builds the snapshot files the phase-0 spec named.
+
+Phase 4 loads memory through UFFD and stores the root disk as overlaybd
+layers (shared RO base + private upper). Without ublk, the VMM sees a
+materialized private file of the same layers.
 """
 from __future__ import annotations
 
@@ -19,6 +23,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .store import TraceError
+from .uffd import UffdHandler, capture_dirty_memfile, snapshot_load_body
 
 AGENT_PORT = 5252
 BACKEND = "firecracker"
@@ -118,6 +123,7 @@ class FirecrackerVM:
         FirecrackerVM._cid += 1
         if FirecrackerVM._cid > 10000:
             FirecrackerVM._cid = 3
+        self.uffd: UffdHandler | None = None
 
     def vsock_host(self) -> str:
         return f"{self.vsock_uds}_{self.cfg.agent_port}"
@@ -146,12 +152,14 @@ class FirecrackerVM:
             return ""
 
     def boot_from_rootfs(self, rootfs_src: str) -> None:
-        shutil.copy2(rootfs_src, self.rootfs_abs)
+        if os.path.abspath(rootfs_src) != os.path.abspath(self.rootfs_abs):
+            shutil.copy2(rootfs_src, self.rootfs_abs)
         self._spawn()
         _must(self.api_sock, "PUT", "/machine-config", {
             "vcpu_count": self.cfg.vcpu_count,
             "mem_size_mib": self.cfg.mem_size_mib,
             "smt": False,
+            "track_dirty_pages": True,
         })
         _must(self.api_sock, "PUT", "/boot-source", {
             "kernel_image_path": os.path.abspath(self.cfg.kernel),
@@ -179,16 +187,35 @@ class FirecrackerVM:
                 f"{e}; log: {self._log_tail()}")
         self._wait_agent()
 
-    def load_snapshot(self, snapfile: str, memfile: str, rootfs: str) -> None:
-        shutil.copy2(rootfs, self.rootfs_abs)
+    def load_snapshot(self, snapfile: str, memfile: str, rootfs: str,
+                      *, use_uffd: bool = True) -> None:
+        if os.path.abspath(rootfs) != os.path.abspath(self.rootfs_abs):
+            shutil.copy2(rootfs, self.rootfs_abs)
         shutil.copy2(snapfile, os.path.join(self.jail, "snapfile"))
-        shutil.copy2(memfile, os.path.join(self.jail, "memfile"))
+        jail_mem = os.path.join(self.jail, "memfile")
+        if os.path.abspath(memfile) != os.path.abspath(jail_mem):
+            shutil.copy2(memfile, jail_mem)
         self._spawn()
-        _must(self.api_sock, "PUT", "/snapshot/load", {
-            "snapshot_path": "snapfile",
-            "mem_backend": {"backend_type": "File", "backend_path": "memfile"},
-            "resume_vm": True,
-        }, timeout=30.0)
+        if use_uffd:
+            uffd_rel = "uffd.sock"
+            handler = UffdHandler(os.path.join(self.jail, uffd_rel), jail_mem)
+            handler.start()
+            self.uffd = handler
+            body = snapshot_load_body(uffd_rel, resume=True)
+        else:
+            body = {
+                "snapshot_path": "snapfile",
+                "mem_backend": {"backend_type": "File", "backend_path": "memfile"},
+                "resume_vm": True,
+                "track_dirty_pages": True,
+            }
+        try:
+            _must(self.api_sock, "PUT", "/snapshot/load", body, timeout=30.0)
+        except Exception:
+            if self.uffd is not None:
+                self.uffd.stop()
+                self.uffd = None
+            raise
         self._wait_agent()
 
     def _wait_agent(self, seconds: float = 20.0) -> None:
@@ -228,10 +255,21 @@ class FirecrackerVM:
         }, timeout=60.0)
         os.makedirs(os.path.dirname(snapfile), exist_ok=True)
         shutil.copy2(jail_snap, snapfile)
-        shutil.copy2(jail_mem, memfile)
-        shutil.copy2(self.rootfs_abs, os.path.join(os.path.dirname(snapfile), "rootfs"))
+        full_mem = memfile + ".full"
+        try:
+            shutil.copy2(jail_mem, full_mem)
+            capture_dirty_memfile(full_mem, memfile)
+        finally:
+            if os.path.isfile(full_mem):
+                os.unlink(full_mem)
 
     def kill(self) -> None:
+        if self.uffd is not None:
+            try:
+                self.uffd.stop()
+            except Exception:
+                pass
+            self.uffd = None
         if self.proc is None:
             return
         try:

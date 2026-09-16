@@ -24,7 +24,7 @@ snapshots/{state_id}/rootfs
 snapshots/{state_id}/header
 ```
 
-`header` 是 JSON：vcpu、内存、vsock 端口。overlaybd 的块映射第 4 阶段再写进同一个文件名。
+`header` 是 JSON：vcpu、内存、vsock 端口。overlaybd 的块映射和第 4 阶段的 dirty-page `memfile` 见 `docs/spec/phase-4.md`。
 
 Guest 里的 `guest_agent` 听 vsock 5252。一条 span 事件的 action 是 `exec`，observation 是 `{exit, stdout, stderr}`。
 

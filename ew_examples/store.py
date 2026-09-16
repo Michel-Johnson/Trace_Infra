@@ -249,6 +249,16 @@ class LocalStore:
         os.makedirs(d, exist_ok=True)
         return d
 
+    def layers_dir(self) -> str:
+        d = os.path.join(self.root, "layers")
+        os.makedirs(d, exist_ok=True)
+        return d
+
+    def layer_base_path(self, base_id: str = "rootfs") -> str:
+        d = os.path.join(self.layers_dir(), base_id)
+        os.makedirs(d, exist_ok=True)
+        return os.path.join(d, "base")
+
     def write_metadata(self, state_id: str, metadata: dict) -> None:
         _write_json(os.path.join(self.fc_dir(state_id), "metadata.json"), metadata)
 

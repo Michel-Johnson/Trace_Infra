@@ -16,8 +16,10 @@ from typing import Any, Callable
 
 from .engine import Budget, Episode, PROTOCOL
 from .fc import BACKEND as FC_BACKEND, FirecrackerConfig, FirecrackerVM
+from .layers import LayeredDisk, ensure_base
 from .store import LocalStore, TraceError
 from .tasks import load_task
+from .uffd import DirtyMemfile
 
 BACKEND = "episode"
 _CROCKFORD = "0123456789ABCDEFGHJKMNPQRSTVWXYZ"
@@ -46,6 +48,7 @@ class _Box:
     backend: str = BACKEND
     t: int = 0
     vm: FirecrackerVM | None = None
+    disk: LayeredDisk | None = None
 
 
 def _dump_episode(ep: Episode, task_id: str, seed: int) -> dict:
@@ -400,7 +403,10 @@ class Runtime:
         sandbox_id = new_id()
         jail = os.path.join(self.store.root, "live", sandbox_id)
         vm = FirecrackerVM(self.firecracker, jail)
-        vm.boot_from_rootfs(self.firecracker.rootfs)
+        _base_id, base_path = self._shared_base()
+        disk = LayeredDisk(base_path, os.path.join(jail, "upper"))
+        disk.backing_for_vmm(vm.rootfs_abs)
+        vm.boot_from_rootfs(vm.rootfs_abs)
         self.store.put_run({
             "run_id": run_id,
             "task_id": task_id,
@@ -409,7 +415,7 @@ class Runtime:
             "created_at": self._clock(),
         })
         box = _Box(sandbox_id=sandbox_id, run_id=run_id, backend=FC_BACKEND,
-                   vm=vm, t=0, span_id="")
+                   vm=vm, t=0, span_id="", disk=disk)
         self._boxes[sandbox_id] = box
         committed = self.commit_state(sandbox_id)
         return {
@@ -468,6 +474,12 @@ class Runtime:
                 pass
             raise
         box.vm.resume()
+        if box.disk is None:
+            base_id, base_path = self._shared_base()
+            box.disk = LayeredDisk(base_path, os.path.join(snap_dir, "upper"))
+        else:
+            box.disk.upper_path = os.path.join(snap_dir, "upper")
+        box.disk.capture_from(box.vm.rootfs_abs)
         metadata = {
             "state_id": state_id,
             "run_id": box.run_id,
@@ -478,12 +490,7 @@ class Runtime:
             "protocol": PROTOCOL,
         }
         self.store.write_metadata(state_id, metadata)
-        self.store.write_header(state_id, {
-            "vcpu_count": box.vm.cfg.vcpu_count,
-            "mem_size_mib": box.vm.cfg.mem_size_mib,
-            "agent_port": box.vm.cfg.agent_port,
-            "guest_cid": box.vm.guest_cid,
-        })
+        self.store.write_header(state_id, self._fc_header(box, state_id, snap_dir))
         snapshot_uri = self.store.snapshot_uri(state_id)
         rec = {
             "state_id": state_id,
@@ -515,6 +522,30 @@ class Runtime:
             "prompt_uri": prompt_uri,
         }
 
+    def _shared_base(self) -> tuple[str, str]:
+        assert self.firecracker is not None
+        base_id = "rootfs"
+        dest = self.store.layer_base_path(base_id)
+        ensure_base(self.firecracker.rootfs, dest)
+        return base_id, dest
+
+    def _fc_header(self, box: _Box, state_id: str, snap_dir: str) -> dict:
+        header = {
+            "vcpu_count": box.vm.cfg.vcpu_count if box.vm else 1,
+            "mem_size_mib": box.vm.cfg.mem_size_mib if box.vm else 128,
+            "agent_port": box.vm.cfg.agent_port if box.vm else 5252,
+            "guest_cid": box.vm.guest_cid if box.vm else 0,
+        }
+        if box.disk is not None:
+            base_id, base_path = self._shared_base()
+            header["disk"] = box.disk.header_disk(
+                base_id=base_id, base_uri=base_path)
+            header["disk"]["upper"] = "upper"
+        mem_path = os.path.join(snap_dir, "memfile")
+        if os.path.isfile(mem_path):
+            header["memory"] = DirtyMemfile(mem_path).header_memory()
+        return header
+
     def _fc_restore(self, st: dict) -> dict:
         if self.firecracker is None:
             raise TraceError("VmmFailed", "Runtime was not given a FirecrackerConfig")
@@ -522,10 +553,25 @@ class Runtime:
         jail = os.path.join(self.store.root, "live", sandbox_id)
         snap_dir = self.store.fc_dir(st["state_id"])
         vm = FirecrackerVM(self.firecracker, jail)
+        header_path = os.path.join(snap_dir, "header")
+        header: dict = {}
+        if os.path.isfile(header_path):
+            with open(header_path) as fh:
+                header = json.load(fh)
+        disk = None
+        rootfs = os.path.join(snap_dir, "rootfs")
+        if (header.get("disk") or {}).get("kind") == "overlaybd":
+            disk = LayeredDisk.from_snapshot(
+                header, snap_dir, self.store.layers_dir())
+            disk.backing_for_vmm(vm.rootfs_abs)
+            rootfs = vm.rootfs_abs
+        elif not os.path.isfile(rootfs):
+            raise TraceError("StateNotFound", f"no disk layers for {st['state_id']}")
         vm.load_snapshot(
             os.path.join(snap_dir, "snapfile"),
             os.path.join(snap_dir, "memfile"),
-            os.path.join(snap_dir, "rootfs"),
+            rootfs,
+            use_uffd=True,
         )
         box = _Box(
             sandbox_id=sandbox_id,
@@ -536,6 +582,7 @@ class Runtime:
             last_state_id=st["state_id"],
             dirty=False,
             span_id="",
+            disk=disk,
         )
         self._boxes[sandbox_id] = box
         self._open_span(box, st["state_id"])

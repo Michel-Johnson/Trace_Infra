@@ -9,7 +9,9 @@ from .tasks import TASKS, load_task
 from .store import LocalStore, TraceError
 from .trace import Runtime, new_id
 from .fc import FirecrackerConfig
+from .layers import LayeredDisk
+from .uffd import UffdHandler, snapshot_load_body
 
 __all__ = ["Action", "ActionError", "Budget", "Episode", "Task", "TASKS",
            "load_task", "LocalStore", "Runtime", "TraceError", "new_id",
-           "FirecrackerConfig"]
+           "FirecrackerConfig", "LayeredDisk", "UffdHandler", "snapshot_load_body"]
