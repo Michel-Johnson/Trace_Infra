@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from .engine import Budget, Episode, PROTOCOL
+from .fc import BACKEND as FC_BACKEND, FirecrackerConfig, FirecrackerVM
 from .store import LocalStore, TraceError
 from .tasks import load_task
 
@@ -38,10 +39,13 @@ def new_id() -> str:
 class _Box:
     sandbox_id: str
     run_id: str
-    episode: Episode
-    span_id: str
+    episode: Episode | None = None
+    span_id: str = ""
     last_state_id: str | None = None
     dirty: bool = False
+    backend: str = BACKEND
+    t: int = 0
+    vm: FirecrackerVM | None = None
 
 
 def _dump_episode(ep: Episode, task_id: str, seed: int) -> dict:
@@ -93,10 +97,12 @@ def _clone_episode(src: Episode) -> Episode:
 class Runtime:
     """In-process episode backend for the phase-0 APIs."""
 
-    def __init__(self, root: str, *, clock: Callable[[], float] = time.time):
+    def __init__(self, root: str, *, clock: Callable[[], float] = time.time,
+                 firecracker: FirecrackerConfig | None = None):
         self.store = LocalStore(root)
         self._clock = clock
         self._boxes: dict[str, _Box] = {}
+        self.firecracker = firecracker
 
     def _box(self, sandbox_id: str) -> _Box:
         box = self._boxes.get(sandbox_id)
@@ -119,7 +125,8 @@ class Runtime:
         }
         self.store.put_span(rec)
         box.span_id = span_id
-        box.episode.span_id = span_id
+        if box.episode is not None:
+            box.episode.span_id = span_id
 
     def _attach(self, ep: Episode, sandbox_id: str, run_id: str, span_id: str) -> None:
         ep.sandbox_id = sandbox_id
@@ -127,8 +134,11 @@ class Runtime:
         ep.span_id = span_id
         ep._clock = self._clock
 
-    def start_run(self, task_id: str, seed: int = 0) -> dict:
+    def start_run(self, task_id: str, seed: int = 0, *,
+                  backend: str = BACKEND) -> dict:
         """Create a sandbox at t=0, commit the root state, open a span."""
+        if backend == FC_BACKEND:
+            return self._fc_start(task_id, seed)
         task = load_task(task_id, seed)
         ep = Episode(task, clock=self._clock)
         run_id = new_id()
@@ -155,6 +165,8 @@ class Runtime:
 
     def act(self, sandbox_id: str, name: str, params: dict | None = None) -> dict:
         box = self._box(sandbox_id)
+        if box.backend == FC_BACKEND:
+            return self._fc_act(box, name, params)
         env = box.episode.act(name, params)
         row = box.episode.trajectory[-1]
         self.store.write_event(box.run_id, box.span_id, row)
@@ -166,6 +178,8 @@ class Runtime:
 
     def commit_state(self, sandbox_id: str, prompt: dict | None = None) -> dict:
         box = self._box(sandbox_id)
+        if box.backend == FC_BACKEND:
+            return self._fc_commit(box, prompt)
         run = self.store.get_run(box.run_id)
         state_id = new_id()
         parent = box.last_state_id
@@ -219,6 +233,8 @@ class Runtime:
 
     def restore_state(self, state_id: str) -> dict:
         st = self.store.get_state(state_id)
+        if st["backend"] == FC_BACKEND:
+            return self._fc_restore(st)
         ep = _load_episode(self.store.read_episode(state_id), clock=self._clock)
         sandbox_id = new_id()
         box = _Box(
@@ -256,7 +272,7 @@ class Runtime:
                 f"stop_before_t={stop_before_t} not in [{t_lo}, {t_hi}]",
                 stop_before_t=stop_before_t, t_lo=t_lo, t_hi=t_hi)
         applied = 0
-        last_t = box.episode.t
+        last_t = box.t if box.backend == FC_BACKEND else box.episode.t
         from_t = span["t_start"]
         for rec in index:
             if rec["t"] >= stop_before_t:
@@ -284,6 +300,10 @@ class Runtime:
 
     def branch(self, sandbox_id: str, n: int) -> dict:
         box = self._box(sandbox_id)
+        if box.backend == FC_BACKEND:
+            raise TraceError(
+                "BranchFailed",
+                "firecracker Branch is phase 5 (forkd); copy-restore is not CoW")
         if n < 1 or n > 100:
             raise TraceError("BranchFailed", f"n must be 1..100, got {n}")
         parent_state_id = None if box.dirty else box.last_state_id
@@ -336,4 +356,194 @@ class Runtime:
         return {"span": span, "events": events}
 
     def episode(self, sandbox_id: str) -> Episode:
-        return self._box(sandbox_id).episode
+        ep = self._box(sandbox_id).episode
+        if ep is None:
+            raise TraceError("SandboxGone", "this sandbox is firecracker, not episode")
+        return ep
+
+    def _record_env(self, box: _Box, name: str, params: dict, status: str,
+                    observation: dict | None = None, error: str | None = None,
+                    message: str | None = None, cost: int = 0) -> dict:
+        box.t += 1
+        env: dict[str, Any] = {
+            "protocol": PROTOCOL, "status": status, "cost_charged": cost,
+            "budget_remaining": {},
+        }
+        if observation is not None:
+            env["observation"] = observation
+        if error:
+            env["error"] = error
+        if message:
+            env["message"] = message
+        row = {
+            "protocol": PROTOCOL, "t": box.t, "ts": round(self._clock(), 2),
+            "action": name, "params": params, "status": status, "cost": cost,
+            "budget_remaining": {}, "observation": observation,
+            "run_id": box.run_id, "span_id": box.span_id,
+            "sandbox_id": box.sandbox_id,
+        }
+        if error:
+            row["error"] = error
+        if message:
+            row["message"] = message
+        self.store.write_event(box.run_id, box.span_id, row)
+        span = self.store.get_span(box.span_id)
+        span["t_end"] = box.t
+        self.store.put_span(span)
+        box.dirty = True
+        return env
+
+    def _fc_start(self, task_id: str, seed: int) -> dict:
+        if self.firecracker is None:
+            raise TraceError("VmmFailed", "Runtime was not given a FirecrackerConfig")
+        run_id = new_id()
+        sandbox_id = new_id()
+        jail = os.path.join(self.store.root, "live", sandbox_id)
+        vm = FirecrackerVM(self.firecracker, jail)
+        vm.boot_from_rootfs(self.firecracker.rootfs)
+        self.store.put_run({
+            "run_id": run_id,
+            "task_id": task_id,
+            "seed": seed,
+            "backend": FC_BACKEND,
+            "created_at": self._clock(),
+        })
+        box = _Box(sandbox_id=sandbox_id, run_id=run_id, backend=FC_BACKEND,
+                   vm=vm, t=0, span_id="")
+        self._boxes[sandbox_id] = box
+        committed = self.commit_state(sandbox_id)
+        return {
+            "sandbox_id": sandbox_id,
+            "run_id": run_id,
+            "state_id": committed["state_id"],
+            "t": 0,
+            "backend": FC_BACKEND,
+            "prompt": None,
+        }
+
+    def _fc_act(self, box: _Box, name: str, params: dict | None) -> dict:
+        params = dict(params or {})
+        if box.vm is None:
+            raise TraceError("SandboxGone", "vm process is gone")
+        if name != "exec":
+            return self._record_env(box, name, params, "error",
+                                    error="UnknownAction",
+                                    message="firecracker backend only has exec")
+        cmd = str(params.get("cmd") or params.get("command") or "")
+        if not cmd:
+            return self._record_env(box, name, params, "error",
+                                    error="ActionRefused", message="exec needs cmd")
+        try:
+            obs = box.vm.exec(cmd)
+        except TraceError as e:
+            return self._record_env(box, name, params, "error",
+                                    error=e.code, message=e.message)
+        status = "ok" if obs.get("exit") == 0 else "error"
+        extra = {}
+        if status == "error":
+            extra["error"] = "ExecFailed"
+            extra["message"] = f"exit {obs.get('exit')}"
+        return self._record_env(box, name, params, status, observation=obs, **extra)
+
+    def _fc_commit(self, box: _Box, prompt: dict | None) -> dict:
+        if box.vm is None:
+            raise TraceError("SandboxGone", "vm process is gone")
+        run = self.store.get_run(box.run_id)
+        state_id = new_id()
+        parent = box.last_state_id
+        from_span_id = box.span_id if box.dirty and box.span_id else None
+        prompt_uri = None
+        if prompt is not None:
+            prompt_uri = self.store.write_prompt(box.run_id, state_id, prompt)
+        snap_dir = self.store.fc_dir(state_id)
+        snapfile = os.path.join(snap_dir, "snapfile")
+        memfile = os.path.join(snap_dir, "memfile")
+        box.vm.pause()
+        try:
+            box.vm.create_snapshot(snapfile, memfile)
+        except Exception:
+            try:
+                box.vm.resume()
+            except Exception:
+                pass
+            raise
+        box.vm.resume()
+        metadata = {
+            "state_id": state_id,
+            "run_id": box.run_id,
+            "backend": FC_BACKEND,
+            "task_id": run["task_id"],
+            "seed": run["seed"],
+            "t": box.t,
+            "protocol": PROTOCOL,
+        }
+        self.store.write_metadata(state_id, metadata)
+        self.store.write_header(state_id, {
+            "vcpu_count": box.vm.cfg.vcpu_count,
+            "mem_size_mib": box.vm.cfg.mem_size_mib,
+            "agent_port": box.vm.cfg.agent_port,
+            "guest_cid": box.vm.guest_cid,
+        })
+        snapshot_uri = self.store.snapshot_uri(state_id)
+        rec = {
+            "state_id": state_id,
+            "run_id": box.run_id,
+            "parent_state_id": parent,
+            "from_span_id": from_span_id,
+            "t": box.t,
+            "backend": FC_BACKEND,
+            "snapshot_uri": snapshot_uri,
+            "prompt_uri": prompt_uri,
+            "budget": {},
+            "created_at": self._clock(),
+        }
+        self.store.put_state(rec)
+        if from_span_id:
+            span = self.store.get_span(from_span_id)
+            span["to_state_id"] = state_id
+            span["t_end"] = box.t if box.t else None
+            self.store.put_span(span)
+        box.last_state_id = state_id
+        box.dirty = False
+        self._open_span(box, state_id)
+        return {
+            "state_id": state_id,
+            "run_id": box.run_id,
+            "t": box.t,
+            "parent_state_id": parent,
+            "snapshot_uri": snapshot_uri,
+            "prompt_uri": prompt_uri,
+        }
+
+    def _fc_restore(self, st: dict) -> dict:
+        if self.firecracker is None:
+            raise TraceError("VmmFailed", "Runtime was not given a FirecrackerConfig")
+        sandbox_id = new_id()
+        jail = os.path.join(self.store.root, "live", sandbox_id)
+        snap_dir = self.store.fc_dir(st["state_id"])
+        vm = FirecrackerVM(self.firecracker, jail)
+        vm.load_snapshot(
+            os.path.join(snap_dir, "snapfile"),
+            os.path.join(snap_dir, "memfile"),
+            os.path.join(snap_dir, "rootfs"),
+        )
+        box = _Box(
+            sandbox_id=sandbox_id,
+            run_id=st["run_id"],
+            backend=FC_BACKEND,
+            vm=vm,
+            t=st["t"],
+            last_state_id=st["state_id"],
+            dirty=False,
+            span_id="",
+        )
+        self._boxes[sandbox_id] = box
+        self._open_span(box, st["state_id"])
+        return {
+            "sandbox_id": sandbox_id,
+            "state_id": st["state_id"],
+            "run_id": st["run_id"],
+            "t": st["t"],
+            "backend": FC_BACKEND,
+            "prompt": self.store.read_prompt(st.get("prompt_uri")),
+        }

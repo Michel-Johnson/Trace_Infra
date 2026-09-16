@@ -8,6 +8,8 @@ from .engine import Action, ActionError, Budget, Episode, Task
 from .tasks import TASKS, load_task
 from .store import LocalStore, TraceError
 from .trace import Runtime, new_id
+from .fc import FirecrackerConfig
 
 __all__ = ["Action", "ActionError", "Budget", "Episode", "Task", "TASKS",
-           "load_task", "LocalStore", "Runtime", "TraceError", "new_id"]
+           "load_task", "LocalStore", "Runtime", "TraceError", "new_id",
+           "FirecrackerConfig"]

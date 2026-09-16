@@ -63,7 +63,7 @@
 
 `episode` 后端：`load_task(task_id, seed)`，恢复 budget、`t`、`done`、`result` 和 Task 以下划线开头的内部字段。这些内部字段不得出现在任何 observation 里，只给 Restore 使用。
 
-`firecracker` 后端：按该 state 的 snapfile、memfile、rootfs、header 恢复。第 3 阶段实现。
+`firecracker` 后端：按该 state 的 snapfile、memfile、rootfs、header 恢复。第 3 阶段见 `docs/spec/phase-3.md`。
 
 ### ReplaySpan
 

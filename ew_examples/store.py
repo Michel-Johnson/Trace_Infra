@@ -243,3 +243,16 @@ class LocalStore:
         if not os.path.isfile(uri):
             return None
         return _read_json(uri)
+
+    def fc_dir(self, state_id: str) -> str:
+        d = os.path.join(self.root, "snapshots", state_id)
+        os.makedirs(d, exist_ok=True)
+        return d
+
+    def write_metadata(self, state_id: str, metadata: dict) -> None:
+        _write_json(os.path.join(self.fc_dir(state_id), "metadata.json"), metadata)
+
+    def write_header(self, state_id: str, header: dict) -> str:
+        path = os.path.join(self.fc_dir(state_id), "header")
+        _write_json(path, header)
+        return path
