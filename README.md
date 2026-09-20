@@ -128,4 +128,4 @@ rt.act(restored["sandbox_id"], "exec", {"cmd": "cat /tmp/marker"})
 
 不传 `backend` 时走进程内 `episode`（内置 `counter` 任务，只给接口测试用）。`restore_and_replay(state_id)` 默认只解冻；传入 `span_id` 才会再跑 `ReplaySpan`。
 
-规格在 `docs/spec/`。
+规格在 `docs/spec/`。开源对照笔记在 `docs/research/`，第一份是 Dressage。
