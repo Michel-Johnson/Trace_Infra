@@ -1,0 +1,33 @@
+{
+  "name": "@trace-hunter/web",
+  "version": "0.5.4",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:mock": "vite --mode mock --host 127.0.0.1",
+    "build": "node ../../scripts/build_project_docs.mjs && tsc -b && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "types": "openapi-typescript ../../contracts/openapi.json -o src/api/generated.ts"
+  },
+  "dependencies": {
+    "@deepseek-ai/cordis": "4.0.2",
+    "@deepseek-ai/dsh-client-ui-slots": "0.1.2-alpha.5",
+    "antd": "6.6.2",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "react-router-dom": "7.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "@vitejs/plugin-react": "5.2.0",
+    "openapi-typescript": "7.13.0",
+    "typescript": "5.9.3",
+    "vite": "7.3.6"
+  },
+  "overrides": {
+    "js-yaml": "4.3.2"
+  }
+}

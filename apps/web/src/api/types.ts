@@ -1,0 +1,11 @@
+import type { components } from './generated';
+export type Collection = components['schemas']['CollectionSummary'];
+export type CollectionDetail = components['schemas']['CollectionDetail'];
+export type CaseDetail = components['schemas']['CaseDetail'];
+export type CaseSummary = components['schemas']['CaseSummary'];
+export type Run = components['schemas']['RunSummary'];
+export type Bundle = components['schemas']['RunBundle'];
+export type Row = components['schemas']['ToolRow'];
+export type Analysis = components['schemas']['AnalysisResult'];
+export type ImportResult = components['schemas']['ImportResult'];
+export type Operation = Row['operation'];

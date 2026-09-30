@@ -1,0 +1,53 @@
+{
+  "schema_version": "trace-hunter/plugin/1.0",
+  "version": "1.0.0",
+  "trace_versions": [
+    "trace-hunter/1.0",
+    "trace-hunter/1.1"
+  ],
+  "scopes": [
+    "run"
+  ],
+  "plugin_id": "official.time",
+  "title": "时间分析",
+  "description": "按记录计算总时长、工具占用与执行用时，保留未知与部分覆盖。",
+  "package_digest": "61f6e47ef45bdc9bbbfa2f3116d1c4ef95ff55ebb5c5793b451aeae5f734fda6",
+  "entrypoint": {
+    "kind": "external_program",
+    "ref": "evaluator.py"
+  },
+  "requirements": [],
+  "default_config": {},
+  "config_schema": {
+    "type": "object",
+    "properties": {},
+    "required": [],
+    "additionalProperties": false
+  },
+  "metrics": [
+    {
+      "key": "wall_ms",
+      "title": "总时长",
+      "type": "number",
+      "unit": "ms",
+      "direction": "lower",
+      "aggregation": "mean"
+    },
+    {
+      "key": "tool_union_ms",
+      "title": "工具占用（并集）",
+      "type": "number",
+      "unit": "ms",
+      "direction": "lower",
+      "aggregation": "mean"
+    },
+    {
+      "key": "tool_sum_ms",
+      "title": "执行用时（加总）",
+      "type": "number",
+      "unit": "ms",
+      "direction": "lower",
+      "aggregation": "mean"
+    }
+  ]
+}

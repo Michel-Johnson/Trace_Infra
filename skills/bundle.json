@@ -1,0 +1,6 @@
+{
+  "bundle_version": "0.4.11",
+  "check_url": "http://10.37.24.3:8766/api/skills/manifest",
+  "download_url": "http://10.37.24.3:8766/api/skills/archive",
+  "page_url": "http://10.37.24.3:8766/skills.html"
+}

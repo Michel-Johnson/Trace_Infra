@@ -1,0 +1,590 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-hunter:plugin:2.0",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "trace-hunter/plugin/2.0"
+    },
+    "plugin_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{2,95}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 10000
+    },
+    "package_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "contributes": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "const": "renderer"
+              },
+              "implementation": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "enum": [
+                      "browser"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "host",
+                  "ref"
+                ],
+                "additionalProperties": false
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "collection",
+                    "case",
+                    "run",
+                    "turn",
+                    "span",
+                    "artifact",
+                    "comparison"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "consumes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "config_schema": {
+                "type": "object"
+              },
+              "default_config": {
+                "type": "object"
+              },
+              "trigger": {
+                "const": "view"
+              },
+              "output_kind": {
+                "const": "view"
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "trace.read",
+                    "derived.read"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "mounts": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "collection.case_table",
+                    "case.comparison",
+                    "run.timeline",
+                    "record.detail",
+                    "result.detail"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kind",
+              "implementation",
+              "scopes",
+              "consumes",
+              "config_schema",
+              "default_config",
+              "trigger",
+              "output_kind",
+              "permissions",
+              "mounts"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "const": "evaluator"
+              },
+              "implementation": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "enum": [
+                      "server",
+                      "remote_agent"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "host",
+                  "ref"
+                ],
+                "additionalProperties": false
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "collection",
+                    "case",
+                    "run",
+                    "turn",
+                    "span",
+                    "artifact",
+                    "comparison"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "consumes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "config_schema": {
+                "type": "object"
+              },
+              "default_config": {
+                "type": "object"
+              },
+              "trigger": {
+                "const": "explicit"
+              },
+              "output_kind": {
+                "const": "evaluation"
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "trace.read",
+                    "derived.read",
+                    "evaluation.submit"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "metrics": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    },
+                    "type": {
+                      "enum": [
+                        "number",
+                        "boolean",
+                        "string"
+                      ]
+                    },
+                    "unit": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "direction": {
+                      "enum": [
+                        "higher",
+                        "lower",
+                        "none"
+                      ]
+                    },
+                    "aggregation": {
+                      "enum": [
+                        "none",
+                        "mean",
+                        "sum",
+                        "pass_rate",
+                        "distribution"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "title",
+                    "type",
+                    "unit",
+                    "direction",
+                    "aggregation"
+                  ],
+                  "additionalProperties": false
+                },
+                "minItems": 1,
+                "maxItems": 50
+              },
+              "requirements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "domain": {
+                      "enum": [
+                        "timing",
+                        "tools",
+                        "assertions"
+                      ]
+                    },
+                    "on_missing": {
+                      "enum": [
+                        "block",
+                        "allow_partial"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "domain",
+                    "on_missing"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 10
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kind",
+              "implementation",
+              "scopes",
+              "consumes",
+              "config_schema",
+              "default_config",
+              "trigger",
+              "output_kind",
+              "permissions",
+              "metrics",
+              "requirements"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "const": "slicer"
+              },
+              "implementation": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "enum": [
+                      "browser",
+                      "server"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "host",
+                  "ref"
+                ],
+                "additionalProperties": false
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "collection",
+                    "case",
+                    "run",
+                    "turn",
+                    "span",
+                    "artifact",
+                    "comparison"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "consumes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "config_schema": {
+                "type": "object"
+              },
+              "default_config": {
+                "type": "object"
+              },
+              "trigger": {
+                "const": "interaction"
+              },
+              "output_kind": {
+                "const": "selection"
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "trace.read",
+                    "derived.read"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "mode": {
+                "const": "filter"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kind",
+              "implementation",
+              "scopes",
+              "consumes",
+              "config_schema",
+              "default_config",
+              "trigger",
+              "output_kind",
+              "permissions",
+              "mode"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "kind": {
+                "const": "slicer"
+              },
+              "implementation": {
+                "type": "object",
+                "properties": {
+                  "host": {
+                    "enum": [
+                      "server",
+                      "remote_agent"
+                    ]
+                  },
+                  "ref": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": [
+                  "host",
+                  "ref"
+                ],
+                "additionalProperties": false
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "collection",
+                    "case",
+                    "run",
+                    "turn",
+                    "span",
+                    "artifact",
+                    "comparison"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "consumes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 256
+                },
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "config_schema": {
+                "type": "object"
+              },
+              "default_config": {
+                "type": "object"
+              },
+              "trigger": {
+                "const": "explicit"
+              },
+              "output_kind": {
+                "const": "facets"
+              },
+              "permissions": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "trace.read",
+                    "derived.read",
+                    "facets.submit"
+                  ]
+                },
+                "minItems": 0,
+                "maxItems": 100,
+                "uniqueItems": true
+              },
+              "mode": {
+                "const": "classify"
+              }
+            },
+            "required": [
+              "id",
+              "title",
+              "kind",
+              "implementation",
+              "scopes",
+              "consumes",
+              "config_schema",
+              "default_config",
+              "trigger",
+              "output_kind",
+              "permissions",
+              "mode"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "extensions": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*\\.[a-zA-Z0-9_.-]+$": {}
+      },
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "plugin_id",
+    "version",
+    "title",
+    "description",
+    "package_digest",
+    "contributes",
+    "extensions"
+  ],
+  "additionalProperties": false
+}

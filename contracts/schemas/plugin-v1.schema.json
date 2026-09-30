@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "trace-hunter/plugin/1.0"
+    },
+    "plugin_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9.-]{2,95}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 10000
+    },
+    "package_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "trace_versions": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "trace-hunter/1.0",
+          "trace-hunter/1.1"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "entrypoint": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "external_program",
+            "agent_skill"
+          ]
+        },
+        "ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "kind",
+        "ref"
+      ],
+      "additionalProperties": false
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "const": "run"
+      },
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "requirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "enum": [
+              "timing",
+              "tools",
+              "assertions"
+            ]
+          },
+          "on_missing": {
+            "enum": [
+              "block",
+              "allow_partial"
+            ]
+          }
+        },
+        "required": [
+          "domain",
+          "on_missing"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 10
+    },
+    "config_schema": {
+      "type": "object"
+    },
+    "default_config": {
+      "type": "object"
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "type": {
+            "enum": [
+              "number",
+              "boolean",
+              "string"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "direction": {
+            "enum": [
+              "higher",
+              "lower",
+              "none"
+            ]
+          },
+          "aggregation": {
+            "enum": [
+              "none",
+              "mean",
+              "sum",
+              "pass_rate",
+              "distribution"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "type",
+          "unit",
+          "direction",
+          "aggregation"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1,
+      "maxItems": 50
+    }
+  },
+  "required": [
+    "schema_version",
+    "plugin_id",
+    "version",
+    "title",
+    "description",
+    "package_digest",
+    "trace_versions",
+    "entrypoint",
+    "scopes",
+    "requirements",
+    "config_schema",
+    "default_config",
+    "metrics"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Hunter Adapter"
+  short_description: "开发、验证并运行 Trace 来源 Adapter"
+  default_prompt: "使用 $trace-hunter-adapter 检查这批原始 Trace，选择或开发精确 Adapter，并验证转换保真度。"

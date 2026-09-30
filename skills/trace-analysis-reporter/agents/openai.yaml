@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Analysis Reporter"
+  short_description: "把 Trace 分析结果整理成可审计、可复查的报告"
+  default_prompt: "使用 $trace-analysis-reporter 将 Eval Spec、批量 Analysis Result 和逐条 DeepDiveResult JSONL 整理成可审计报告。"

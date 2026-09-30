@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 761" role="img" aria-labelledby="title desc"><title id="title">目标时序：回放、独立验收与训练发布</title><desc id="desc">此图为待建设目标。回放固定输入和环境，恢复初态后创建新执行轨迹，再由独立验收生成报告。仅在通过版本化准入政策后发布训练数据，训练侧提交有范围的消费回执。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#69757b"/></marker></defs>
+<style>text{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#232b30;font-size:14px}.small{font-size:12px;fill:#677279}.title{font-weight:600;font-size:16px}.label{font-size:12px;fill:#4f616c}.note{font-size:12px;fill:#52646d}.future{stroke-dasharray:6 4}</style>
+<rect width="1000" height="761" fill="white"/>
+<rect x="7.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="80.0" y="47" class="title" text-anchor="middle">发起方</text>
+<text x="80.0" y="69" class="small" text-anchor="middle">固定目标与预算</text>
+<path d="M80.0,83 L80.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<rect x="287.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="360.0" y="47" class="title" text-anchor="middle">平台核心</text>
+<text x="360.0" y="69" class="small" text-anchor="middle">版本 / 权限 / 来源</text>
+<path d="M360.0,83 L360.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<rect x="567.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="640.0" y="47" class="title" text-anchor="middle">回放 Runtime</text>
+<text x="640.0" y="69" class="small" text-anchor="middle">恢复环境 / 新执行</text>
+<path d="M640.0,83 L640.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<rect x="847.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="920.0" y="47" class="title" text-anchor="middle">Verifier / 训练端</text>
+<text x="920.0" y="69" class="small" text-anchor="middle">验收 / 消费</text>
+<path d="M920.0,83 L920.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M80.0,138 L360.0,138" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="220.0" y="124" class="label" text-anchor="middle">1. 固定 Trace + 环境快照 + 回放模式</text>
+<path d="M360.0,198 L640.0,198" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="500.0" y="184" class="label" text-anchor="middle">2. 授权执行，校验初态与工具版本</text>
+<path d="M640.0,258 L360.0,258" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="500.0" y="244" class="label" text-anchor="middle">3. 新 Run + 产物 + 环境证据</text>
+<path d="M360.0,318 L920.0,318" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="640.0" y="304" class="label" text-anchor="middle">4. 独立验证：固定原要求、产物和验收器版本</text>
+<path d="M920.0,378 L360.0,378" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="640.0" y="364" class="label" text-anchor="middle">5. 通过 / 失败 / 缺证据，附证据引用</text>
+<path d="M80.0,438 L360.0,438" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="220.0" y="424" class="label" text-anchor="middle">6. 显式申请训练发布，执行准入政策</text>
+<path d="M360.0,498 L920.0,498" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="640.0" y="484" class="label" text-anchor="middle">7. 固定 Release + 转换版本 + 分片摘要</text>
+<path d="M920.0,558 L360.0,558" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="640.0" y="544" class="label" text-anchor="middle">8. 按任务 / attempt / epoch / step 报告消费</text>
+<path d="M360.0,618 L80.0,618" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="220.0" y="604" class="label" text-anchor="middle">9. 回查：模型 checkpoint → 消费 → 样本 → 原轨迹</text>
+<rect x="25" y="657" width="950" height="30" fill="#eef3f5"/>
+<text x="35" y="677" class="note" text-anchor="start">回放、独立验收、Dataset Release 和训练消费账本仍待建设；当前 API 没有承诺这些成品资源。</text>
+<rect x="25" y="695" width="950" height="30" fill="#eef3f5"/>
+<text x="35" y="715" class="note" text-anchor="start">环境恢复失败与业务失败分开；下载不计为训练，回执表示训练端报告，不证明样本对权重的因果贡献。</text>
+</svg>

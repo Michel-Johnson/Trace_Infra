@@ -1,0 +1,50 @@
+[Unit]
+Description=Trace Hunter Claude Code Agent worker
+After=network-online.target
+Wants=network-online.target
+Requires=trace-hunter-agent-egress.service
+After=trace-hunter-agent-egress.service
+
+[Service]
+Type=simple
+User=tracehunter-agent
+Group=tracehunter-agent
+WorkingDirectory=/home/shangjiarui/apps/trace-hunter-next
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/etc/trace-hunter/agent.env
+ExecStart=/home/shangjiarui/apps/trace-hunter-next/.venv/bin/python scripts/trace_hunter_agent_worker.py
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+KillMode=control-group
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+BindReadOnlyPaths=/etc/trace-hunter/agent-hosts:/etc/hosts
+BindReadOnlyPaths=/etc/trace-hunter/agent-nsswitch:/etc/nsswitch.conf
+InaccessiblePaths=/run/nscd/socket
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=127.0.0.0/8
+IPAddressAllow=::1/128
+CapabilityBoundingSet=
+LockPersonality=yes
+UMask=0077
+StateDirectory=trace-hunter-agent
+ReadWritePaths=/var/lib/trace-hunter-agent
+MemoryMax=4G
+CPUQuota=200%
+TasksMax=128
+
+# The deployed drop-in must restrict egress to localhost and the currently
+# resolved model relay/proxy addresses using IPAddressAllow. Do not remove
+# IPAddressDeny while bypassPermissions is enabled.
+
+[Install]
+WantedBy=multi-user.target

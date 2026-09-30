@@ -1,0 +1,7 @@
+{
+  "files": {
+    "plugins/extensions/call-activity/classify.py": "edc03ff9adb4dc2386b1e0d1f3d51c428f961958ea188d54abceecb5bd655974",
+    "apps/web/src/plugins/renderers.tsx": "d437e9a2825e8734b60e40774aac36b2a4d0dcecadd89609ea995079f233ec18",
+    "apps/web/src/plugins/slicers.ts": "c91acedfb9f278ac5a40c17fe66cacfb0fe00b9475c2339ded84ca80344d694d"
+  }
+}

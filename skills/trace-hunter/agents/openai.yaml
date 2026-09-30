@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Hunter"
+  short_description: "Trace Infra 总说明书与 Adapter、CLI、评测分析路由入口"
+  default_prompt: "使用 $trace-hunter 判断我的 Trace 任务应调用哪些平台 Skills，并按正确顺序继续执行。"

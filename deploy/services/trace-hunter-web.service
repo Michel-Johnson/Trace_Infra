@@ -1,0 +1,15 @@
+[Unit]
+Description=Trace Hunter Web
+After=trace-hunter-api.service
+
+[Service]
+WorkingDirectory=%h/apps/trace-hunter-next
+EnvironmentFile=%h/apps/trace-hunter-data/web.env
+ExecStart=%h/apps/trace-hunter-tools/caddy run --config deploy/Caddyfile --adapter caddyfile
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

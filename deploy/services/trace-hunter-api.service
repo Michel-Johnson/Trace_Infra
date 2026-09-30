@@ -1,0 +1,21 @@
+[Unit]
+Description=Trace Hunter API
+Requires=trace-hunter-db.service
+After=trace-hunter-db.service
+
+[Service]
+WorkingDirectory=%h/apps/trace-hunter-next
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=%h/apps/trace-hunter-data/database.env
+EnvironmentFile=%h/apps/trace-hunter-data/api.env
+ExecStart=%h/apps/trace-hunter-next/.venv/bin/python apps/api/run.py
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=60
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

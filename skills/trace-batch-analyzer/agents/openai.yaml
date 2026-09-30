@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Batch Analyzer"
+  short_description: "执行 Approved Eval Spec 并产出全量可追溯分析结果"
+  default_prompt: "使用 $trace-batch-analyzer 按 Approved Eval Spec 评测固定批量 Trace，分别核对结果质量、执行过程、工具调用、效率与稳定性，输出 case-results.jsonl 和 analysis-result.json，不生成报告。"

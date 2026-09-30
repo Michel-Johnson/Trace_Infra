@@ -1,0 +1,13 @@
+[Unit]
+Description=Trace Hunter Agent dedicated-user egress policy
+After=network-online.target
+Wants=network-online.target
+Before=trace-hunter-agent.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/trace-hunter-agent-egress
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

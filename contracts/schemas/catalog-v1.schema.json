@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-hunter:catalog:1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "collection", "cases"],
+  "properties": {
+    "schema_version": {"const": "trace-hunter/catalog/1.0"},
+    "collection": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "title", "kind", "description"],
+      "properties": {
+        "id": {"$ref": "#/$defs/id"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 200},
+        "kind": {"enum": ["evaluation", "task"]},
+        "description": {"type": "string", "maxLength": 4000}
+      }
+    },
+    "cases": {
+      "type": "array", "maxItems": 10000,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["query_id", "title", "conversation"],
+        "properties": {
+          "query_id": {"$ref": "#/$defs/id"},
+          "title": {"type": "string", "minLength": 1, "maxLength": 200},
+          "description": {"type": "string", "maxLength": 4000},
+          "conversation": {
+            "type": "object", "additionalProperties": false,
+            "required": ["mode", "turns"],
+            "properties": {
+              "mode": {"enum": ["single_turn", "multi_turn", "unknown"]},
+              "turns": {
+                "type": "array", "maxItems": 1000,
+                "items": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["id", "prompt"],
+                  "properties": {
+                    "id": {"$ref": "#/$defs/id"},
+                    "prompt": {"type": "string", "minLength": 1, "maxLength": 100000}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {"id": {"type": "string", "pattern": "^[a-zA-Z0-9_.-]{1,128}$"}}
+}

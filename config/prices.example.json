@@ -1,0 +1,13 @@
+{
+  "version": "synthetic-example-1",
+  "entries": [{
+    "harness": "Example harness",
+    "model": "Example model",
+    "currency": "USD",
+    "source": "合成单价，仅用于演示与测试，不是实际模型报价",
+    "input_per_million": 1,
+    "output_per_million": 2,
+    "cache_read_per_million": 0.1,
+    "cache_write_per_million": 1.25
+  }]
+}

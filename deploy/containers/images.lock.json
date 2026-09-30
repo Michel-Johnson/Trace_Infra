@@ -1,0 +1,99 @@
+{
+  "cutoff": "2026-09-03T00:00:00Z",
+  "verified_at": "2026-09-11",
+  "source": "Docker Official Images / Docker Hub tag metadata",
+  "images": [
+    {
+      "image": "python",
+      "tag": "3.12.14-slim-bookworm",
+      "source": "https://hub.docker.com/v2/repositories/library/python/tags/3.12.14-slim-bookworm",
+      "digest": "sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254",
+      "last_updated": "2026-09-01T05:09:02.947054Z",
+      "tag_last_pushed": "2026-09-01T05:09:02.947054Z",
+      "variants": [
+        {
+          "architecture": "amd64",
+          "os": "linux",
+          "digest": "sha256:9c47360a2a0355e2da18516d0b1c2126ec22c195d2185e97347c9d98398c5bef",
+          "last_pushed": "2026-09-01T02:12:13.894833549Z"
+        },
+        {
+          "architecture": "arm64",
+          "os": "linux",
+          "digest": "sha256:d04f49f5882f49a3b91f874e75e19f0c265f7222da8659741a9d7eab148f22a9",
+          "last_pushed": "2026-09-01T02:12:15.431716792Z"
+        }
+      ],
+      "reference": "python:3.12.14-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254"
+    },
+    {
+      "image": "node",
+      "tag": "24.11.0-bookworm-slim",
+      "source": "https://hub.docker.com/v2/repositories/library/node/tags/24.11.0-bookworm-slim",
+      "digest": "sha256:76d0ed0ed93bed4f4376211e9d8fddac4d8b3fbdb54cc45955696001a3c91152",
+      "last_updated": "2025-11-04T10:43:43.768222Z",
+      "tag_last_pushed": "2025-11-04T10:43:43.768222Z",
+      "variants": [
+        {
+          "architecture": "amd64",
+          "os": "linux",
+          "digest": "sha256:87ccbf5cc428351bc8e242a9e43ceb998ec546c33a08fe77a839227c9142ab7e",
+          "last_pushed": "2025-11-04T10:42:35.784144791Z"
+        },
+        {
+          "architecture": "arm64",
+          "os": "linux",
+          "digest": "sha256:0e5f9744e7d936536405761bb7bfedc61d9e8b4604aa34d0403a7f6c3e5a98f0",
+          "last_pushed": "2025-11-04T10:42:36.598452329Z"
+        }
+      ],
+      "reference": "node:24.11.0-bookworm-slim@sha256:76d0ed0ed93bed4f4376211e9d8fddac4d8b3fbdb54cc45955696001a3c91152"
+    },
+    {
+      "image": "caddy",
+      "tag": "2.10.2-alpine",
+      "source": "https://hub.docker.com/v2/repositories/library/caddy/tags/2.10.2-alpine",
+      "digest": "sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d",
+      "last_updated": "2026-02-11T19:53:40.885933Z",
+      "tag_last_pushed": "2026-02-11T19:53:40.885933Z",
+      "variants": [
+        {
+          "architecture": "amd64",
+          "os": "linux",
+          "digest": "sha256:d8c17a862962def15cde69863a3a463f25a2664942eafd7bdbf050e9c3116b83",
+          "last_pushed": "2026-02-11T19:52:23.602593164Z"
+        },
+        {
+          "architecture": "arm64",
+          "os": "linux",
+          "digest": "sha256:8dbca3525dd8dce671e495665a0eb297a83ec87ee30f373947d0ea93115949db",
+          "last_pushed": "2026-02-11T19:52:25.838359748Z"
+        }
+      ],
+      "reference": "caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d"
+    },
+    {
+      "image": "postgres",
+      "tag": "18.6-bookworm",
+      "source": "https://hub.docker.com/v2/repositories/library/postgres/tags/18.6-bookworm",
+      "digest": "sha256:1c59e2c3c818eaa0f0628f695b36e7c9e362d6b219b36a54a32df645cbd7e1af",
+      "last_updated": "2026-08-25T07:10:57.660891Z",
+      "tag_last_pushed": "2026-08-25T07:10:57.660891Z",
+      "variants": [
+        {
+          "architecture": "amd64",
+          "os": "linux",
+          "digest": "sha256:a10c981235b4f635e65df0cfb66a5598064628128505dbc6a3ed4ca303717521",
+          "last_pushed": "2026-08-25T04:12:54.105752375Z"
+        },
+        {
+          "architecture": "arm64",
+          "os": "linux",
+          "digest": "sha256:4d155aa3f2c2cc1838bb70e81396f76373ec7275ec9ce9cf32873cd677c9a992",
+          "last_pushed": "2026-08-25T04:12:54.979263159Z"
+        }
+      ],
+      "reference": "postgres:18.6-bookworm@sha256:1c59e2c3c818eaa0f0628f695b36e7c9e362d6b219b36a54a32df645cbd7e1af"
+    }
+  ]
+}

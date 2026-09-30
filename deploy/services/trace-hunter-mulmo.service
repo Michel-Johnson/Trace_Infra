@@ -1,0 +1,44 @@
+[Unit]
+Description=Trace Hunter MulmoTerminal interactive Claude session
+After=network-online.target trace-hunter-mulmo-egress.service
+Wants=network-online.target
+Requires=trace-hunter-mulmo-egress.service
+
+[Service]
+Type=simple
+User=tracehunter-terminal
+Group=tracehunter-terminal
+WorkingDirectory=/opt/trace-hunter-mulmoterminal-4.15.0/node_modules/mulmoterminal
+EnvironmentFile=/etc/trace-hunter/mulmo.env
+Environment=HOME=/var/lib/trace-hunter-terminal
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/node --import tsx server/index.ts
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+KillMode=control-group
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=yes
+BindReadOnlyPaths=/etc/trace-hunter/agent-hosts:/etc/hosts
+BindReadOnlyPaths=/etc/trace-hunter/agent-nsswitch:/etc/nsswitch.conf
+InaccessiblePaths=/run/nscd/socket
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+IPAddressDeny=any
+IPAddressAllow=127.0.0.0/8
+CapabilityBoundingSet=
+LockPersonality=yes
+UMask=0077
+StateDirectory=trace-hunter-terminal
+ReadWritePaths=/var/lib/trace-hunter-terminal
+MemoryMax=4G
+CPUQuota=200%
+TasksMax=128
+
+[Install]
+WantedBy=multi-user.target

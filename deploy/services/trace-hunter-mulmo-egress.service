@@ -1,0 +1,12 @@
+[Unit]
+Description=Trace Hunter MulmoTerminal dedicated-user egress policy
+Requires=trace-hunter-agent-egress.service
+After=trace-hunter-agent-egress.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/trace-hunter-mulmo-egress
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

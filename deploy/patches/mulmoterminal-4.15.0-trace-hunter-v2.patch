@@ -1,0 +1,282 @@
+diff --git a/server/agents/claude-args.ts b/server/agents/claude-args.ts
+index 9b8b56a..7204517 100644
+--- a/server/agents/claude-args.ts
++++ b/server/agents/claude-args.ts
+@@ -52,7 +52,9 @@ export interface ClaudeArgsInput {
+ }
+
+ export function buildClaudeArgs(input: ClaudeArgsInput): string[] {
+-  const guiArgs = ["--permission-mode", input.permissionMode];
++  const guiArgs = input.permissionMode === "bypassPermissions"
++    ? ["--dangerously-skip-permissions"]
++    : ["--permission-mode", input.permissionMode];
+   // Two flags for one setting, because Claude Code names the file form separately. Which one is
+   // not this builder's call — a Windows command line cannot carry the newlines this text has, so
+   // there the caller writes a file and sends its path (#1516, session-settings.ts).
+diff --git a/server/index.ts b/server/index.ts
+index fabe008..b77e063 100644
+--- a/server/index.ts
++++ b/server/index.ts
+@@ -176,10 +176,9 @@ const CODEX_MODEL = process.env.CODEX_MODEL || null;
+ const ANTIGRAVITY_MODEL = process.env.ANTIGRAVITY_MODEL || null;
+ const GROK_MODEL = process.env.GROK_MODEL || null;
+ const MUSE_MODEL = process.env.MUSE_MODEL || null;
+-// Permission mode for backend-spawned Claude sessions. Defaults to "auto" so
+-// the backend runs hands-off; override with CLAUDE_PERMISSION_MODE (e.g.
+-// "default" / "acceptEdits" / "bypassPermissions" / "plan") when needed.
+-const CLAUDE_PERMISSION_MODE = process.env.CLAUDE_PERMISSION_MODE || "auto";
++// Trace Hunter's dedicated terminal user starts Claude without interactive
++// permission prompts. The spawner translates this to the exact CLI flag.
++const CLAUDE_PERMISSION_MODE = process.env.CLAUDE_PERMISSION_MODE || "bypassPermissions";
+
+ // CLAUDE_CWD is the workspace used as the PTY cwd and as the root for persisted
+ // session state, so it must exist before we spawn anything into it.
+diff --git a/src/components/GridView.vue b/src/components/GridView.vue
+index 0346fd7..8334de4 100644
+--- a/src/components/GridView.vue
++++ b/src/components/GridView.vue
+@@ -76,6 +76,7 @@ import type { LaunchPick } from "./launchers";
+ import { isRecord } from "../../common/isRecord";
+ import { isDrawnResult } from "../utils/drawnResult";
+ import { fetchWithTimeout, SLOW_COMMAND_TIMEOUT_MS } from "../utils/fetchWithTimeout";
++import { useTerminalFontSize } from "../composables/useTerminalFontSize";
+
+ // The multi-terminal grid view, shown at /terminals. Leaving the grid is just a
+ // route push from the shared toolbar (Chat / Collections / a favorite), so there's
+@@ -93,9 +94,36 @@ import { fetchWithTimeout, SLOW_COMMAND_TIMEOUT_MS } from "../utils/fetchWithTim
+ // own specs, and overlayOrigin reads the same singleton for the same reason.
+ const onTerminalsRoute = () => router.currentRoute.value.name === "terminals";
+
+-const init = initialState(localStorage.getItem(STATE_KEY), localStorage.getItem(LEGACY_KEY));
++// Trace Hunter embeds the native Claude TUI, but owns the surrounding new/resume controls.
++// Never reuse Mulmo's persisted grid on entry: absent ?resume= means a NEW Claude session.
++const embedded = new URLSearchParams(window.location.search).get("trace_hunter") !== "0";
++if (embedded) document.documentElement.dataset.traceHunter = "1";
++const { setFontSize } = useTerminalFontSize();
++function onTraceHunterZoom(event: MessageEvent): void {
++  if (!embedded || event.source !== window.parent || event.origin !== window.location.origin) return;
++  if (event.data?.type === "trace-hunter-terminal-font-size") setFontSize(event.data.size);
++}
++onMounted(() => {
++  if (!embedded || window.parent === window) return;
++  window.addEventListener("message", onTraceHunterZoom);
++  window.parent.postMessage({ type: "trace-hunter-terminal-ready" }, window.location.origin);
++});
++onBeforeUnmount(() => window.removeEventListener("message", onTraceHunterZoom));
++const embeddedCwd = "/var/lib/trace-hunter-terminal/workspace";
++const resumeId = new URLSearchParams(window.location.search).get("resume");
++const validResume = resumeId && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(resumeId) ? resumeId : null;
++const embeddedState: GridState = {
++  cells: [{ uid: 0, session: validResume, cwd: embeddedCwd, ...(validResume ? {} : { autoStart: true }) }],
++  expanded: 0,
++  page: 0,
++  nextUid: 1,
++  sortMode: "manual",
++};
++const init = embedded
++  ? { state: embeddedState, migrated: false }
++  : initialState(localStorage.getItem(STATE_KEY), localStorage.getItem(LEGACY_KEY));
+ const state = ref<GridState>(init.state);
+-const persist = () => localStorage.setItem(STATE_KEY, JSON.stringify(state.value));
++const persist = () => { if (!embedded) localStorage.setItem(STATE_KEY, JSON.stringify(state.value)); };
+ // Write the migrated state before dropping the legacy key, so a reload between
+ // migration and the first change can't lose the sessions.
+ if (init.migrated) {
+@@ -583,6 +611,10 @@ const closeLaunchPanel = () => (launchPanelOpen.value = false);
+ // covers the right edge of the stage, and a control that can only open it leaves the user hunting
+ // for the way back. Opening it on a DIFFERENT cell re-targets rather than closing.
+ function toggleLaunchPanel(origin: number | null) {
++  if (embedded) {
++    placeCell(origin ?? NO_ORIGIN_UID, cellForAgent(embeddedCwd, "claude"));
++    return;
++  }
+   if (launchPanelOpen.value && launchPanelOrigin.value === origin) {
+     closeLaunchPanel();
+     return;
+@@ -705,6 +737,7 @@ let adoptingUnplaced = false;
+ // triggers and one are the same question.
+ let sweepAgain = false;
+ async function adoptUnplacedSessions(): Promise<void> {
++  if (embedded) return;
+   // One sweep at a time. The route watcher can fire again before the fetch resolves — leave the
+   // grid for an overlay and come straight back — and both runs would read `cells` before either
+   // inserted, so both would adopt the same session and give it two cells fighting over one socket.
+@@ -858,6 +891,7 @@ onBeforeUnmount(detachSpawnedChat);
+ <template>
+   <div class="flex flex-col h-screen w-screen overflow-hidden">
+     <AppToolbar
++      v-if="!embedded"
+       :add-terminal-active="launchPanelOpen"
+       :sort-mode="state.sortMode"
+       :status-counts="statusCounts"
+@@ -886,6 +920,7 @@ onBeforeUnmount(detachSpawnedChat);
+     <TerminalGrid
+       ref="gridRef"
+       class="flex-1 min-h-0 min-w-0"
++      :trace-hunter-embedded="embedded"
+       :cells="displayCells"
+       :expanded-uid="expandedUid"
+       :list-rows="listRows"
+@@ -921,7 +956,7 @@ onBeforeUnmount(detachSpawnedChat);
+       <GuideLinks />
+     </footer>
+     <LaunchPanel
+-      v-if="launchPanelOpen"
++      v-if="!embedded && launchPanelOpen"
+       :key="launchPanelOrigin ?? -1"
+       :initial-dir="launchPanelDir"
+       :default-cwd="defaultCwd"
+diff --git a/src/components/Terminal.vue b/src/components/Terminal.vue
+index 6987630..e959cee 100644
+--- a/src/components/Terminal.vue
++++ b/src/components/Terminal.vue
+@@ -238,7 +238,9 @@ const { fontSize } = useTerminalFontSize();
+ function effectiveTermTheme(): ITheme {
+   const { theme, colors } = dirConfig.value;
+   const base = theme ? termThemeFor(theme) : currentTermTheme();
+-  return colors ? { ...base, ...colors } : base;
++  const resolved = colors ? { ...base, ...colors } : base;
++  return new URLSearchParams(window.location.search).get("trace_hunter") === "0"
++    ? resolved : { ...resolved, background: "#000000", selectionBackground: "#262626" };
+ }
+
+ // Same precedence as the theme: a dir pin wins, otherwise the app-wide value — per-browser for
+diff --git a/src/components/TerminalGrid.vue b/src/components/TerminalGrid.vue
+index 3eea63e..3b974d5 100644
+--- a/src/components/TerminalGrid.vue
++++ b/src/components/TerminalGrid.vue
+@@ -113,6 +113,7 @@ const props = defineProps<{
+   // While a cell is zoomed: cockpit roster (true) vs thumbnail strip (false). Owned by GridView
+   // so the toggle can live in the global toolbar rather than float over the stage.
+   listMode: boolean;
++  traceHunterEmbedded?: boolean;
+ }>();
+ const emit = defineEmits<{
+   (e: "session" | "cwd", uid: number, value: string): void;
+@@ -1027,6 +1028,10 @@ function setRosterWidth(width: number): void {
+   const available = stageWidth();
+   stageWidthNow.value = available;
+   if (available <= 0) return; // nothing to clamp against yet; see setPaneWidth
++  if (props.traceHunterEmbedded) {
++    if (rightPane.value && !paneFull.value) setPaneWidth(paneWidth.value, available - PANE_CHROME_PX);
++    return;
++  }
+   rosterWidth.value = clampSecondary(width, available, rosterFloors.value);
+   // The row the terminal shares with the file pane is what the roster just took from, so the
+   // pane is re-clamped against the width the row is ABOUT to have. Computed rather than measured
+@@ -1203,7 +1208,7 @@ watch(
+ </script>
+
+ <template>
+-  <div ref="stage" class="stage" :class="{ zoomed, listmode: listMode, flipping: flippingUids.size > 0 }" :style="flipVars" @focusin="onFocusIn">
++  <div ref="stage" class="stage" :class="{ zoomed, listmode: listMode, traceHunterEmbedded, flipping: flippingUids.size > 0 }" :style="flipVars" @focusin="onFocusIn">
+     <!-- Cockpit roster: a tall text row per cell (status / dir / memo / summary / prompt / latest
+          reply). Click a row to swap which terminal is enlarged.
+          The 9px gap is 5px of visible channel plus the 2px ring every row paints on each side
+@@ -1221,7 +1226,7 @@ watch(
+       ref="roster"
+       data-testid="cockpit"
+       class="flex min-w-0 shrink-0 grow-0 flex-col gap-[9px] overflow-y-auto bg-deep py-1.5 pr-0 pl-1.5"
+-      :style="{ flexBasis: `${rosterWidth}px` }"
++      :style="traceHunterEmbedded ? undefined : { flexBasis: `${rosterWidth}px` }"
+     >
+       <div
+         v-for="row in listRows"
+@@ -1264,14 +1269,14 @@ watch(
+              Unclamped, alone among these lines, because it needs no guard: normalizeMemo caps a
+              memo at one line of 200 code points, where the three below are agent text of no
+              bounded length, which is what `cockpitLines` exists for. -->
+-        <span v-if="row.memo" data-testid="cockpit-memo" class="text-[12px] leading-[1.35]"
++        <span v-if="row.memo && !traceHunterEmbedded" data-testid="cockpit-memo" class="text-[12px] leading-[1.35]"
+           ><b class="mr-1 text-[10px] font-bold text-[#7a8aa0]">memo</b> {{ row.memo }}</span
+         >
+         <!-- The clamp is a runtime value, so the utility reads a CSS variable each line sets for
+              itself — `line-clamp-N` only exists for the literals Tailwind found in the source.
+              `title` carries the rest, so a low clamp hides nothing you can't get at. -->
+         <span
+-          v-if="row.summary"
++          v-if="row.summary && !traceHunterEmbedded"
+           data-testid="cockpit-line"
+           class="line-clamp-[var(--cockpit-lines)] overflow-hidden text-[12px] leading-[1.35]"
+           :style="{ '--cockpit-lines': cockpitLines.summary }"
+@@ -1286,7 +1291,7 @@ watch(
+           ><b class="mr-1 text-[10px] font-bold text-[#7a8aa0]">prompt</b> {{ row.prompt || row.fallback || "—" }}</span
+         >
+         <span
+-          v-if="row.response"
++          v-if="row.response && !traceHunterEmbedded"
+           data-testid="cockpit-line"
+           class="line-clamp-[var(--cockpit-lines)] overflow-hidden text-[12px] leading-[1.35] text-dim"
+           :style="{ '--cockpit-lines': cockpitLines.response }"
+@@ -1298,7 +1303,7 @@ watch(
+     <!-- Roster | enlarged cell. Same separator as the file pane's, mirrored: the roster is BEFORE
+          it, so the pointer and the arrow keys both move it the other way (#1077). -->
+     <div
+-      v-if="zoomed && listMode"
++      v-if="zoomed && listMode && !traceHunterEmbedded"
+       data-testid="roster-splitter"
+       class="w-[5px] flex-none cursor-col-resize bg-border hover:bg-accent focus-visible:bg-accent"
+       role="separator"
+@@ -1582,6 +1587,36 @@ watch(
+   flex-direction: row;
+ }
+
++/* Trace Hunter keeps session selection above the terminal, not in a wide sidebar. */
++.stage.traceHunterEmbedded.zoomed.listmode {
++  flex-direction: column;
++  position: relative;
++}
++.stage.traceHunterEmbedded.zoomed.listmode [data-testid="cockpit"] {
++  flex: 0 0 60px;
++  width: 100%;
++  flex-direction: row;
++  gap: 6px;
++  overflow-x: auto;
++  overflow-y: hidden;
++  padding: 4px 6px;
++  border-bottom: 1px solid var(--border);
++}
++.stage.traceHunterEmbedded.zoomed.listmode [data-testid="cockpit-row"] {
++  flex: 0 0 min(230px, 48vw);
++  height: 50px;
++  gap: 0;
++  padding: 3px 6px;
++  overflow: hidden;
++  background: #000 !important;
++}
++.stage.traceHunterEmbedded.zoomed.listmode .zoom-row {
++  width: 100%;
++}
++.stage.traceHunterEmbedded.zoomed.listmode .zoom-main {
++  padding: 0;
++}
++
+ .stage.zoomed.listmode .zoom-main {
+   padding: 6px 6px 6px 0;
+ }
+diff --git a/src/style.css b/src/style.css
+index 72ba8f3..734b5f0 100644
+--- a/src/style.css
++++ b/src/style.css
+@@ -35,6 +35,21 @@
+   --term-selection: #3a3a5e;
+ }
+
++/* Trace Hunter's embedded Claude surface stays black even if Mulmo's theme changes. */
++:root[data-trace-hunter="1"],
++:root[data-trace-hunter="1"][data-theme] {
++  --bg-base: #000000;
++  --bg-deep: #000000;
++  --bg-panel: #000000;
++  --bg-subtle: #000000;
++  --bg-elevated: #090909;
++  --bg-input: #000000;
++  --bg-hover: #151515;
++  --bg-selected: #161616;
++  --bg-selected-hover: #242424;
++  --border: #303030;
++}
++
+ /* Nord — cool slate, frost-cyan accent (medium-dark). */
+ :root[data-theme="nord"] {
+   --bg-base: #2e3440;

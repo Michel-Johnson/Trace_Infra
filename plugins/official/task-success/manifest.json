@@ -1,0 +1,51 @@
+{
+  "schema_version": "trace-hunter/plugin/1.0",
+  "version": "1.0.0",
+  "trace_versions": [
+    "trace-hunter/1.0",
+    "trace-hunter/1.1"
+  ],
+  "scopes": [
+    "run"
+  ],
+  "plugin_id": "official.task-success",
+  "title": "任务验收",
+  "description": "按指定验收项核对已记录的断言；不重新操作业务系统，缺证据不记零分。",
+  "package_digest": "f075f866b88ba579f5a9025130ba3a428277ac441faea34b3025b71b43eb2a24",
+  "entrypoint": {
+    "kind": "external_program",
+    "ref": "evaluator.py"
+  },
+  "requirements": [],
+  "default_config": {
+    "required_checks": []
+  },
+  "config_schema": {
+    "type": "object",
+    "properties": {
+      "required_checks": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1
+        },
+        "uniqueItems": true,
+        "maxItems": 100
+      }
+    },
+    "required": [
+      "required_checks"
+    ],
+    "additionalProperties": false
+  },
+  "metrics": [
+    {
+      "key": "task_passed",
+      "title": "任务通过",
+      "type": "boolean",
+      "unit": null,
+      "direction": "higher",
+      "aggregation": "pass_rate"
+    }
+  ]
+}

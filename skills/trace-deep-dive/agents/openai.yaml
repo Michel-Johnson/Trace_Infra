@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Deep Dive"
+  short_description: "从结果、过程、工具、效率四方面精读 Trace 并核对证据"
+  default_prompt: "使用 $trace-deep-dive 按给定 Eval Spec 精读这条 Trace，从四方面取证并写出一条 DeepDiveResult JSONL 记录。"

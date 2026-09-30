@@ -1,0 +1,163 @@
+{
+  "schema_version": "trace-hunter/plugin/2.0",
+  "plugin_id": "official.call-activity",
+  "version": "1.0.0",
+  "title": "调用视图与活动分类",
+  "description": "方格与列表共用切片条件；按已记录操作生成调用分类，保留未知，不产生评分。",
+  "package_digest": "a40b4b1d987751f7823f047dec3869d4ec42f14f8ec60d8a625a3e19212d14bd",
+  "contributes": [
+    {
+      "id": "grid",
+      "title": "调用方格",
+      "kind": "renderer",
+      "implementation": {
+        "host": "browser",
+        "ref": "trace.grid"
+      },
+      "scopes": [
+        "run"
+      ],
+      "consumes": [
+        "trace-hunter/1.0",
+        "trace-hunter/1.1"
+      ],
+      "config_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "default_config": {},
+      "trigger": "view",
+      "output_kind": "view",
+      "permissions": [
+        "trace.read"
+      ],
+      "mounts": [
+        "run.timeline"
+      ]
+    },
+    {
+      "id": "list",
+      "title": "调用列表",
+      "kind": "renderer",
+      "implementation": {
+        "host": "browser",
+        "ref": "trace.list"
+      },
+      "scopes": [
+        "run"
+      ],
+      "consumes": [
+        "trace-hunter/1.0",
+        "trace-hunter/1.1"
+      ],
+      "config_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "default_config": {},
+      "trigger": "view",
+      "output_kind": "view",
+      "permissions": [
+        "trace.read"
+      ],
+      "mounts": [
+        "run.timeline"
+      ]
+    },
+    {
+      "id": "operations",
+      "title": "工具类型切片",
+      "kind": "slicer",
+      "implementation": {
+        "host": "browser",
+        "ref": "trace.operations"
+      },
+      "scopes": [
+        "run"
+      ],
+      "consumes": [
+        "trace-hunter/1.0",
+        "trace-hunter/1.1"
+      ],
+      "config_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "default_config": {},
+      "trigger": "interaction",
+      "output_kind": "selection",
+      "permissions": [
+        "trace.read"
+      ],
+      "mode": "filter"
+    },
+    {
+      "id": "facets",
+      "title": "分类切片",
+      "kind": "slicer",
+      "implementation": {
+        "host": "browser",
+        "ref": "trace.facets"
+      },
+      "scopes": [
+        "run"
+      ],
+      "consumes": [
+        "trace-hunter/1.0",
+        "trace-hunter/1.1",
+        "trace-hunter/facets/1.0"
+      ],
+      "config_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "default_config": {},
+      "trigger": "interaction",
+      "output_kind": "selection",
+      "permissions": [
+        "trace.read",
+        "derived.read"
+      ],
+      "mode": "filter"
+    },
+    {
+      "id": "classify",
+      "title": "调用活动分类",
+      "kind": "slicer",
+      "implementation": {
+        "host": "server",
+        "ref": "classify.py"
+      },
+      "scopes": [
+        "run"
+      ],
+      "consumes": [
+        "trace-hunter/1.0",
+        "trace-hunter/1.1"
+      ],
+      "config_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "default_config": {},
+      "trigger": "explicit",
+      "output_kind": "facets",
+      "permissions": [
+        "trace.read",
+        "facets.submit"
+      ],
+      "mode": "classify"
+    }
+  ],
+  "extensions": {}
+}

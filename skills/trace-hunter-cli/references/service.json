@@ -1,0 +1,7 @@
+{
+  "api_contract": "http://10.37.24.3:8766/api/openapi.json",
+  "authentication": "none",
+  "default_project": "benchmark-a",
+  "name": "cloud",
+  "url": "http://10.37.24.3:8766"
+}

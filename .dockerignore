@@ -1,0 +1,17 @@
+**/.git
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.DS_Store
+**/.env
+**/.env.*
+**/*.tsbuildinfo
+var
+tmp
+external
+.bootstrap
+apps/trace-lab
+dist
+apps/web/dist
+labs

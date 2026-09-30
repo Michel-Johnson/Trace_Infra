@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 761" role="img" aria-labelledby="title desc"><title id="title">时序：导入、登记与索引</title><desc id="desc">当前版本入口先保存校验后的内容，再通过数据库事务发布版本登记；随后建立索引。索引失败保留已登记原件，幂等重传不自动重建索引。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#69757b"/></marker></defs>
+<style>text{font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;fill:#232b30;font-size:14px}.small{font-size:12px;fill:#677279}.title{font-weight:600;font-size:16px}.label{font-size:12px;fill:#4f616c}.note{font-size:12px;fill:#52646d}.future{stroke-dasharray:6 4}</style>
+<rect width="1000" height="761" fill="white"/>
+<rect x="7.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="80.0" y="47" class="title" text-anchor="middle">采集器 / Agent</text>
+<text x="80.0" y="69" class="small" text-anchor="middle">提交原始 JSON</text>
+<path d="M80.0,83 L80.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<rect x="287.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="360.0" y="47" class="title" text-anchor="middle">API / 核心</text>
+<text x="360.0" y="69" class="small" text-anchor="middle">校验与版本登记</text>
+<path d="M360.0,83 L360.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<rect x="567.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="640.0" y="47" class="title" text-anchor="middle">内容存储</text>
+<text x="640.0" y="69" class="small" text-anchor="middle">不可变字节</text>
+<path d="M640.0,83 L640.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<rect x="847.0" y="20" width="146" height="63" rx="3" fill="#f8fafb" stroke="#bac5cb" class=""/>
+<text x="920.0" y="47" class="title" text-anchor="middle">PostgreSQL</text>
+<text x="920.0" y="69" class="small" text-anchor="middle">元数据与索引</text>
+<path d="M920.0,83 L920.0,726" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<path d="M80.0,138 L360.0,138" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="220.0" y="124" class="label" text-anchor="middle">1. Idempotency-Key + expected_previous + 原文</text>
+<path d="M360.0,198 L640.0,198" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="500.0" y="184" class="label" text-anchor="middle">2. 写入正文，计算 SHA-256</text>
+<path d="M640.0,258 L360.0,258" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="500.0" y="244" class="label" text-anchor="middle">3. 返回内容引用</text>
+<path d="M360.0,318 L920.0,318" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="640.0" y="304" class="label" text-anchor="middle">4. 事务：幂等检查、版本并发校验、登记 revision</text>
+<path d="M920.0,378 L360.0,378" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="640.0" y="364" class="label" text-anchor="middle">5. 版本登记提交</text>
+<path d="M360.0,438 L920.0,438" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="640.0" y="424" class="label" text-anchor="middle">6. 建立该 projector 的记录索引与状态</text>
+<path d="M920.0,498 L360.0,498" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="640.0" y="484" class="label" text-anchor="middle">7. complete / failed / 本次索引失败信息</text>
+<path d="M360.0,558 L80.0,558" fill="none" stroke="#74818a" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+<text x="220.0" y="544" class="label" text-anchor="middle">8. 已登记版本 + 索引状态</text>
+<path d="M80.0,618 L360.0,618" fill="none" stroke="#74818a" stroke-width="1.3" marker-end="url(#arrow)"/>
+<text x="220.0" y="604" class="label" text-anchor="middle">9. 修复后显式请求 index 重建</text>
+<rect x="25" y="657" width="950" height="30" fill="#eef3f5"/>
+<text x="35" y="677" class="note" text-anchor="start">索引失败不会撤销已保存的原件；重复导入只读取已有状态，避免浏览或重传暗中启动计算。</text>
+<rect x="25" y="695" width="950" height="30" fill="#eef3f5"/>
+<text x="35" y="715" class="note" text-anchor="start">这是当前同步导入路径。分阶段上传和异步索引是后续扩展，不能画成已部署的大规模流管道。</text>
+</svg>

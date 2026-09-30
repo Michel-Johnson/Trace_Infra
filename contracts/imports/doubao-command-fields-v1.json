@@ -1,0 +1,389 @@
+{
+  "schema_version": "trace-hunter/source-fields/1.0",
+  "format": "doubao-command-corpus",
+  "sections": {
+    "catalog": {
+      "version": {
+        "type": "integer",
+        "required": true,
+        "nullable": false,
+        "target": "source-audit.source_version",
+        "rule": "Only export version 1 is supported."
+      },
+      "generatedAt": {
+        "type": "timestamp",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.exported_at",
+        "rule": "Export creation time; never the run or model start."
+      },
+      "traceCount": {
+        "type": "integer",
+        "required": true,
+        "nullable": false,
+        "target": "manifest.source_fragments",
+        "rule": "Must equal catalog entries; not the conversation count."
+      },
+      "datasets": {
+        "type": "array",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets",
+        "rule": "CSV provenance groups, not environments or model groups."
+      },
+      "traces": {
+        "type": "array",
+        "required": true,
+        "nullable": false,
+        "target": "session-index.fragments",
+        "rule": "Index of exported fragments."
+      }
+    },
+    "dataset": {
+      "id": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "source-audit.datasets.id",
+        "rule": "Source group identity; retain verbatim."
+      },
+      "name": {
+        "type": "string",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.name",
+        "rule": "Display label only."
+      },
+      "fileName": {
+        "type": "string",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.fileName",
+        "rule": "Declared original CSV filename; CSV may be absent."
+      },
+      "sourceBytes": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.sourceBytes",
+        "rule": "Declared CSV bytes, not JSON or archive bytes."
+      },
+      "rowCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.rowCount",
+        "rule": "Declared CSV rows; difference from exports must be reported."
+      },
+      "traceCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.traceCount",
+        "rule": "Declared fragment count checked against catalog grouping."
+      },
+      "commandCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.commandCount",
+        "rule": "Declared raw item total; not unique executions."
+      },
+      "invalidRowCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit.datasets.invalidRowCount",
+        "rule": "Exporter-declared rejected rows; does not explain other missing rows."
+      }
+    },
+    "entry": {
+      "id": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "session-index.fragments.id",
+        "rule": "Export fragment ID; never a tool call ID."
+      },
+      "datasetId": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "session-index.fragments.datasetId",
+        "rule": "Source CSV group, not env_id."
+      },
+      "sourceRow": {
+        "type": "integer",
+        "required": true,
+        "nullable": false,
+        "target": "session-index.fragments.sourceRow",
+        "rule": "One-based original CSV row."
+      },
+      "conversationId": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "session-index.conversation_id",
+        "rule": "Group fragments; retain full source ID. Native/hash origin is unknown."
+      },
+      "messageIndex": {
+        "type": "message_index",
+        "required": true,
+        "nullable": false,
+        "target": "phase/source evidence",
+        "rule": "Source position, not a user-turn counter or compaction count."
+      },
+      "title": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "run.title / identity evidence",
+        "rule": "Display preview with explicit truncation evidence; full source retained."
+      },
+      "promptSummary": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "run.query / identity evidence",
+        "rule": "Summary only; never reconstruct complete prompts or turns."
+      },
+      "responseSummary": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "identity evidence",
+        "rule": "Summary only; not the tool output or acceptance result."
+      },
+      "startedAt": {
+        "type": "timestamp",
+        "required": false,
+        "nullable": true,
+        "target": "source-audit consistency",
+        "rule": "Compare with meta.startedAt; meta and item timestamps drive ordering."
+      },
+      "duration": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "source-audit consistency",
+        "rule": "Human display text is preserved; not converted into numeric timing."
+      },
+      "commandCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit consistency",
+        "rule": "Compare against raw items before deduplication."
+      },
+      "successCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit consistency",
+        "rule": "Source labels only; not business task quality."
+      },
+      "failedCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit consistency",
+        "rule": "Source labels only; corrected standard counts are separate."
+      },
+      "path": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "sources.name",
+        "rule": "Resolve a single catalog asset path inside the archive."
+      }
+    },
+    "document": {
+      "meta": {
+        "type": "object",
+        "required": true,
+        "nullable": false,
+        "target": "phases / fragment evidence",
+        "rule": "Fragment metadata, not complete session metadata."
+      },
+      "items": {
+        "type": "array",
+        "required": true,
+        "nullable": false,
+        "target": "spans / record-facts",
+        "rule": "Raw command observations; exact duplicate aliases remain traceable."
+      }
+    },
+    "meta": {
+      "title": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "run.title fallback / fragment evidence",
+        "rule": "Fallback label; full metadata stays in source."
+      },
+      "startedAt": {
+        "type": "timestamp",
+        "required": false,
+        "nullable": true,
+        "target": "phases.start_ms",
+        "rule": "Timezone-aware timestamp relative to the earliest known session endpoint."
+      },
+      "finishedAt": {
+        "type": "timestamp",
+        "required": false,
+        "nullable": true,
+        "target": "phases.end_ms",
+        "rule": "May expand to observed call bounds, with original bounds retained."
+      },
+      "duration": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "fragment evidence",
+        "rule": "Display text only; never estimate model time from it."
+      },
+      "commandCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit consistency",
+        "rule": "Must be compared with the raw item array length."
+      },
+      "executionCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "fragment evidence",
+        "rule": "Exporter-specific count; not used as deduplicated execution count."
+      },
+      "successCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit consistency",
+        "rule": "Compare to raw source success labels."
+      },
+      "failedCount": {
+        "type": "integer",
+        "required": false,
+        "nullable": false,
+        "target": "source-audit consistency",
+        "rule": "Compare to raw source failure labels."
+      }
+    },
+    "item": {
+      "id": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "record-facts.source_item_id",
+        "rule": "Local to fragment; never globally deduplicate by this ID."
+      },
+      "seq": {
+        "type": "integer",
+        "required": true,
+        "nullable": false,
+        "target": "record-facts.seq / source ordering",
+        "rule": "Nonnegative source sequence; resets across fragments."
+      },
+      "resultSeq": {
+        "type": "integer",
+        "required": false,
+        "nullable": true,
+        "target": "record-facts.result_seq",
+        "rule": "Only explicit sharedDuration plus matching seq/resultSeq may group items."
+      },
+      "subIndex": {
+        "type": "integer",
+        "required": false,
+        "nullable": true,
+        "target": "record-facts.sub_index",
+        "rule": "Sub-command index, not another model request."
+      },
+      "operation": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "span.name / record-facts.source_operation",
+        "rule": "Exporter label may be imperfect. Actual tool type stays Bash."
+      },
+      "description": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "record-facts.source_description",
+        "rule": "Preserve human description; do not execute or infer status from it."
+      },
+      "status": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "span.status / record-facts.source_status",
+        "rule": "Source failed and explicit negative process/business evidence take precedence; otherwise unknown stays unknown."
+      },
+      "exitCode": {
+        "type": "integer",
+        "required": false,
+        "nullable": true,
+        "target": "record-facts.process_exit_code",
+        "rule": "Process outcome; zero alone does not prove business success."
+      },
+      "durationMs": {
+        "type": "number",
+        "required": false,
+        "nullable": true,
+        "target": "span.duration_ms / record-facts.source_timing",
+        "rule": "Milliseconds only. Conflicting or negative timing stays raw and standard timing becomes unknown."
+      },
+      "sharedDuration": {
+        "type": "boolean",
+        "required": false,
+        "nullable": false,
+        "target": "shared grouping / record-facts",
+        "rule": "Only literal true enables shared-execution grouping."
+      },
+      "startedAt": {
+        "type": "timestamp",
+        "required": false,
+        "nullable": true,
+        "target": "span.start_ms / source timing",
+        "rule": "Known time sorted chronologically; absent is null, not zero."
+      },
+      "finishedAt": {
+        "type": "timestamp",
+        "required": false,
+        "nullable": true,
+        "target": "span.end_ms / source timing",
+        "rule": "Retain independently of duration, and verify consistency."
+      },
+      "isHelp": {
+        "type": "boolean",
+        "required": false,
+        "nullable": false,
+        "target": "record-facts.source_is_help",
+        "rule": "Exporter hint retained; classifier reads actual command input."
+      },
+      "command": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "input.command / input.commands",
+        "rule": "Exact source command text; never execute during import."
+      },
+      "result": {
+        "type": "string",
+        "required": true,
+        "nullable": false,
+        "target": "output + source pointer",
+        "rule": "Decode one complete JSON container; preserve plain text and original bytes."
+      },
+      "resultSummary": {
+        "type": "string",
+        "required": false,
+        "nullable": true,
+        "target": "record-facts.source_result_summary",
+        "rule": "Source summary remains distinct from complete tool output."
+      }
+    }
+  }
+}

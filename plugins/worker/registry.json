@@ -1,0 +1,9 @@
+{
+  "schema_version": "trace-hunter/worker-registry/1",
+  "packages": [
+    {
+      "directory": "record-tools-1.0.0",
+      "digest": "sha256:68c3b6c9e25abf0d37925015fbf95fd8159df56e056fe7c70f7d8817494b6ef9"
+    }
+  ]
+}

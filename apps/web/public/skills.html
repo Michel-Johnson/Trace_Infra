@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Trace Hunter Skill 版本</title>
+  <style>
+    :root{color-scheme:light;--ink:#22242c;--muted:#6f7280;--line:#dedfe5;--panel:#fff;--accent:#25272f;--bg:#f6f6f8}*{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 ui-sans-serif,system-ui,-apple-system,"PingFang SC",sans-serif}
+    main{width:min(920px,calc(100% - 32px));margin:64px auto}.hero,.panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:30px}
+    .hero{display:flex;gap:24px;align-items:center;justify-content:space-between}h1{font-size:30px;margin:0 0 8px}.muted{color:var(--muted);margin:0}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}.button{display:inline-block;padding:11px 17px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:650;white-space:nowrap}.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}
+    .panel{margin-top:18px}dl{display:grid;grid-template-columns:150px 1fr;gap:10px 18px;margin:0 0 24px}dt{color:var(--muted)}dd{margin:0;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%}th,td{text-align:left;padding:13px 10px;border-top:1px solid var(--line)}th{color:var(--muted);font-weight:550}.digest{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
+    .error{color:#aa331f}@media(max-width:640px){main{margin:24px auto}.hero{align-items:flex-start;flex-direction:column}dl{grid-template-columns:1fr}dd{margin-bottom:8px}.digest{max-width:150px}}
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero"><div><h1>Trace Hunter Skills</h1><p class="muted">查看官方版本、校验摘要并下载可安装包。</p></div><div class="actions"><a class="button" href="/api/skills/archive" download>下载 Skill 包</a><a class="button secondary" href="/api/skills/manifest">查看 JSON</a></div></section>
+    <section class="panel" aria-live="polite"><div id="loading">正在读取版本…</div><div id="content" hidden><dl><dt>Bundle 版本</dt><dd id="version"></dd><dt>版本检查接口</dt><dd id="check"></dd><dt>服务地址</dt><dd id="service"></dd></dl><table><thead><tr><th>Skill</th><th>SHA-256</th></tr></thead><tbody id="skills"></tbody></table></div></section>
+  </main>
+  <script>
+    fetch('/api/skills/manifest',{cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`HTTP ${response.status}`);return response.json()}).then(data=>{document.querySelector('#version').textContent=data.bundle_version;document.querySelector('#check').textContent=data.check_url;document.querySelector('#service').textContent=data.service.url;document.querySelector('#skills').replaceChildren(...data.skills.map(skill=>{const row=document.createElement('tr');const name=document.createElement('td');const digest=document.createElement('td');name.textContent=skill.name;digest.textContent=skill.sha256;digest.className='digest';row.append(name,digest);return row}));document.querySelector('#loading').hidden=true;document.querySelector('#content').hidden=false}).catch(error=>{const loading=document.querySelector('#loading');loading.className='error';loading.textContent=`版本信息读取失败：${error.message}`});
+  </script>
+</body>
+</html>

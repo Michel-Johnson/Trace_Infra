@@ -1,0 +1,1820 @@
+{
+  "cutoff": "2026-09-17T00:00:00Z",
+  "minimum_release_age_days": 7,
+  "install_scripts": "disabled",
+  "packages": [
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/colors",
+      "version": "8.0.1",
+      "published_at": "2026-01-05T11:46:11.548Z",
+      "integrity": "sha512-foPVl0+SWIslGUtD/xBr1p9U4AKzPhNYEseXYRRo5QSzGACYZrQbe11AYJbYfAWnWSpGBx6JjBmSeugUsD9vqQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/cssinjs",
+      "version": "2.1.2",
+      "published_at": "2026-03-04T16:00:57.870Z",
+      "integrity": "sha512-2Hy8BnCEH31xPeSLbhhB2ctCPXE2ZnASdi+KbSeS79BNbUhL9hAEe20SkUk+BR8aKTmqb6+FKFruk7w8z0VoRQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/cssinjs-utils",
+      "version": "2.1.2",
+      "published_at": "2026-03-04T16:23:39.672Z",
+      "integrity": "sha512-5fTHQ158jJJ5dC/ECeyIdZUzKxE/mpEMRZxthyG1sw/AKRHKgJBg00Yi6ACVXgycdje7KahRNvNET/uBccwCnA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/fast-color",
+      "version": "3.0.1",
+      "published_at": "2026-01-26T03:48:14.976Z",
+      "integrity": "sha512-esKJegpW4nckh0o6kV3Tkb7NPIZYbPnnFxmQDUmL08ukXZAvV85TZBr70eGuke/CIArLaP6aw8lt9KILjnWuOw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/icons",
+      "version": "6.3.4",
+      "published_at": "2026-08-31T09:51:03.406Z",
+      "integrity": "sha512-kDoUlppczVyCUTFthF6cHmPzMBYqNZQhu9j6EyIX/YIdM9j9CZNZoJUjzVw7/1v1VO8WwVMmPp15r/uwIAS0AQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/icons-svg",
+      "version": "4.6.0",
+      "published_at": "2026-08-31T09:41:41.391Z",
+      "integrity": "sha512-PRomU725ABMf/lnQp5HiB7my1kjEbFY0D10N4lXYxK6TIB1gKjIVD5MRThpDaezLgw1D774J8eOeeDB0M6wHrQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@ant-design/react-slick",
+      "version": "2.0.0",
+      "published_at": "2025-12-04T15:46:11.576Z",
+      "integrity": "sha512-HMS9sRoEmZey8LsE/Yo6+klhlzU12PisjrVcydW3So7RdklyEd2qehyU6a7Yp+OYN72mgsYs3NFCyP2lCPFVqg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:36:09.883Z",
+      "integrity": "sha512-UI8TGoOO0fYT38VSoAjtu9C0EQkOwgwA4+ETFCgQhTO9NZvpgCERANL0UzioEW89b2zbcoL1B3z+7W37QdBxOA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-darwin-arm64",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:35:18.010Z",
+      "integrity": "sha512-/rlrB+1ovRPWuLYNpuOvWY4dGOGyanW008KeHST6ZjOVfEFBFyqqFJiBaRpDNy5LdlnozZZYWUoMWr8W0KXyEg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-darwin-x64",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:36:08.236Z",
+      "integrity": "sha512-zFcxR5XfroaBmWy2HX8fZ/e/kpAQ4GPIz+cAQMq55SAHP4UorpxQj/upplfvfDC3lSKFfYBDhhSXBs99fKkjJw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-linux-arm64",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:36:27.512Z",
+      "integrity": "sha512-6cCEg5z4awB1i8H1vRMRqLCV9a6rSSzsXXJTpBE2Nte29NMJ2B49PwRcGvdMASYWOmMNgO6ErYQ6ckuQSeSo/g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-linux-arm64-musl",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:38:15.722Z",
+      "integrity": "sha512-WNM6kiyfmVfjY5yi44+8JBJ/5y20QvAnpjVjas9dRm28PEBLEANF2mDxHBeZa9lR9fjdLhuFxZoyYi4F/pT1NQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-linux-x64",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:46:37.245Z",
+      "integrity": "sha512-xiC1514UgW1aRvHOtfgUVUACWtOwm42TIeQlllHFAMFLrBYy+cG+MfSTlTYnjUPpu4zmUeEDEs2VdZL/iLIwGQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-linux-x64-musl",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:37:49.135Z",
+      "integrity": "sha512-uie3ymQ3ZNgRsevP4gWeVK47hL0M4+J8iZA34In7OagGGk2mMPZ07Ft+JDETQrApDwTwqOnhPuO50W4ccUjg9g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-win32-arm64",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:34:50.683Z",
+      "integrity": "sha512-nhIqku3HdRnxm1AX5C1k8eINa8vuV9rSOmGlo0JEMw5y6mYybSJIEEwOIEGZXIzFFPzm54Y8UASg9gSQm3k8pw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@anthropic-ai/claude-code-win32-x64",
+      "version": "2.1.274",
+      "published_at": "2026-09-16T22:37:55.790Z",
+      "integrity": "sha512-D/OLuM2LsRnjTNwFP1LMYqdCa/q6RI1dzaKXCU57NXFOrldkWN9mTdpYxOyo9bl/sR3rHeJ1+ETWQX5DeQlcig=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/code-frame",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:38.208Z",
+      "integrity": "sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/compat-data",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:28.103Z",
+      "integrity": "sha512-locTkQyKvwIEgBzVrn8693ebc97F2U8ZHjbXwDXJ5Fn2TCpNwTlKcaKLkdHop5c/icOFE7qt7Q9JC5hnKNa6Gg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/core",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:53.499Z",
+      "integrity": "sha512-RgHBCvtjbOK2gXSNBNIkNoEc9qoVEtau3hj8gEqKQuL3HZAibKarWFEI3Lfm6EYKkLalOh8eSrj9b+ch9H/VBA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/generator",
+      "version": "7.29.8",
+      "published_at": "2026-07-31T15:07:34.643Z",
+      "integrity": "sha512-gZbepsdh3WDtgZKWL+vTPh71LSBrm/Y4/QDZBVCcYfmeTEEuoOYwlSy+G1StfJg+/Zy550u/3TATbm7qDbbMtg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-compilation-targets",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:38.543Z",
+      "integrity": "sha512-wem6WaBj4NaVYVdNhLPPVacES6ZJ+KBBfSkTMD3YZxbP3rm3Di85tJU5ljaUNhaOynt+Aj0xruhYuzQBt8n71g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-globals",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:30.361Z",
+      "integrity": "sha512-3nQVUAtvkKH9zahfWgw96Jc/uFOmjACE1kQz82E2lqWmHBgjzbNlsC22nuQTfahmWeQtTq5nQ/4Nnd2A1wj4zA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-module-imports",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:37.417Z",
+      "integrity": "sha512-ejHwrQQYcm9xnTivShn2IDOlIzInN34AXskvq9QicvCtEzq1Vzclu/tKF8Jq1Cg8JG2GL6/EmjgsCT7lXepE3g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-module-transforms",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:43.944Z",
+      "integrity": "sha512-UPUVSyXbOh627KiCIGQSgwWzGeBKLkaJ9PJEdrngIwMSzxLR4jS4+f1f1jb7VzBbg8nFLaYotvVPFCTqdrmTAg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-plugin-utils",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:30.789Z",
+      "integrity": "sha512-G7sHYigPY17oO5SYWnfD/0MTBwVR781S/JI643e/JhUYgVgWE/61SoW3NH9KWUKyKq5LVh3npif99Wkt6j86Jw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-string-parser",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:30.727Z",
+      "integrity": "sha512-Pb5ijPrZ89GDH8223L4UP8i6QApWxs04RbPQJTeWDV0/keR2E36MeKnyr6LYmUUvqRRI+Iv87SuF1W6ErINzYw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-validator-identifier",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:31.539Z",
+      "integrity": "sha512-qehxGkRj55h/ff8EMaJ+cYhyaKlHIxqYDn682wQD7RNp9UujOQsHog2uS0r2vzr4pW+sXf90NeeayjcNaX3fFg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helper-validator-option",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:32.613Z",
+      "integrity": "sha512-N9ZErrD+yW5geCDtBqnOoxmR8+tNKiGuxKlDpuJxfsqpa2dFcexaziGAE/qoHLiDDreVNMupxGmSoNlyvsA3gw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/helpers",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:28.369Z",
+      "integrity": "sha512-1k2lAGRMfHTcwuNYcCNUmaUffmQv8KWMfh2iJUUeRlwlwH4FdNG7mfPI10NPfLHJFThE4Tyr4mv7kTNZOiPuBg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/parser",
+      "version": "7.29.8",
+      "published_at": "2026-07-31T15:07:31.195Z",
+      "integrity": "sha512-E8lTAYNB1KW+FH+VGJuZM1ioAx2E6oVlvQFRrf5P8ZZmsiJXYAD9vTFV7yyEURNzgh1dFqMZuO6tUwcARbqFCA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/plugin-transform-react-jsx-self",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:09.761Z",
+      "integrity": "sha512-TL0hMc9xzy86VD31nUiwzd5otRAcyEPcsegCxolO0PvcXuH1v0kECe/UIznYFihpkvU5wg/jk4v0TTEFfm53fw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/plugin-transform-react-jsx-source",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:10.250Z",
+      "integrity": "sha512-06IyK09H3wi4cGbhDBwp5gUGo0IKtnYa8tyTiephirPCK6fbobVGiXMMI5zLQ4aKEYP3wZ3ArU44o+8KMrSG/Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/runtime",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:15:33.978Z",
+      "integrity": "sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/runtime",
+      "version": "8.0.0",
+      "published_at": "2026-06-16T13:32:07.207Z",
+      "integrity": "sha512-sL6cvO2IfkSu/iU+zs2S/w01B7A8V7suXSIKEN4hPFFdZoiPGxrj5pAG0lCaqLWiEIrjKzdznIWuaLcxPR53qw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/template",
+      "version": "7.29.7",
+      "published_at": "2026-05-25T11:16:25.858Z",
+      "integrity": "sha512-puq+Gf35oI24FeN11LkoUQFqv9uwNeWpxXZi/Ji3rRIoKAzKnxRaZ+Gkj0vKS9ZCiTESfng1N9LyOyXvo+m+Gg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/traverse",
+      "version": "7.29.8",
+      "published_at": "2026-07-31T15:09:38.835Z",
+      "integrity": "sha512-I5z7H3bf/41ktsNVLtpN0wAa336HkqIHQ5BuPLEhTkt1jVSyZpeNKIzTgEWmlxjdg81R0IgUCcaE+Ok3NvrfZg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@babel/types",
+      "version": "7.29.8",
+      "published_at": "2026-07-31T15:07:29.559Z",
+      "integrity": "sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@deepseek-ai/cordis",
+      "version": "4.0.2",
+      "published_at": "2026-08-30T13:13:14.302Z",
+      "integrity": "sha512-asOnXP1TzFSFQlHb1iegDZp0z/8WD1c7YNrwJR/Tx2bzNuMXfcekE/I67Iv6SQXeLB4csxqCngzQKANP7gdw0g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@deepseek-ai/cosmokit",
+      "version": "1.8.3",
+      "published_at": "2026-08-30T13:13:02.631Z",
+      "integrity": "sha512-qBo+ronVM6Eu2WNVJXi8JcMiqZ19T9BRIpV+5qJUFPXjGH/Z0QKcQMC/IZJ7L394YTOtJgcovbk9qP0w2GsBXQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@deepseek-ai/dsh-client-ui-slots",
+      "version": "0.1.2-alpha.5",
+      "published_at": "2026-09-02T08:38:47.715Z",
+      "integrity": "sha512-S3B3gmCBHeytkX05AgM2hAov2h0LFRI8jPzgINrAdKsGnwf+BiMDNQcwsjwpaIbZHuphT0Sfxbhm6ltgXvpVPw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@emotion/hash",
+      "version": "0.8.0",
+      "published_at": "2020-03-02T10:15:54.385Z",
+      "integrity": "sha512-kBJtf7PH6aWwZ6fka3zQ0p6SBYzx4fl1LoZXE2RrnYST9Xljm7WfKJrU4g/Xr3Beg72MLrp1AWNUmuYJTL7Cow=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@emotion/unitless",
+      "version": "0.7.5",
+      "published_at": "2019-12-22T23:11:25.582Z",
+      "integrity": "sha512-OWORNpfjMsSSUBVrRBVGECkhWcULOAJz9ZW8uK9qgxD+87M7jHRcvh/A96XXNhXTLmKcoYSQtBEX7lHMO7YRwg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/aix-ppc64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:20.989Z",
+      "integrity": "sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-arm",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:57:26.487Z",
+      "integrity": "sha512-kXXoiPVVGQcnIYGOeaovwOURpniDBpSq4A03qkQ+BMQqtGG6HYap3xne9C1O1yo4TR3qxlCX5IqqmX6fFo2Lqg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:33.520Z",
+      "integrity": "sha512-5YfKeeI8qWfBZIX+u2xZC3Zlb3Os/gLS2sbEKM+I4ZOcsWmHS2WLysCcQZDAFRslDUU5Oiq44gf6PYN1vGwG5A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/android-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:39.478Z",
+      "integrity": "sha512-O387ite7SzUyCcy3JQX4P4bLtEA7bLLkx+esve5JHnyYfNTxcVpXZo9jhdB0lTKN44gztELTdU7nS8Nr16Fs1Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/darwin-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:43.690Z",
+      "integrity": "sha512-n4KqkOQrraxHJcgjM1RvwbigfQKIKJVpM7xp+KsxiyUSrRdIXnt73VhrPAx0fV44hgfmIVKjxMN9J1t5jySVkw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/darwin-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:57:49.027Z",
+      "integrity": "sha512-uq6suIWYP37qzGddBKPw5QEQPi6HiLGsO7UmkpfyaYNQ3D+rN6w6WfwH+nuqcGXWvawGwxOEroO4YGnFh95azw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/freebsd-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:54.493Z",
+      "integrity": "sha512-n+I0BTSRIoy+d6RPKnEVwql5UwBJolytvY4mAOIEJorKlqgPII8ix6slVVrfZ5Tnj7glIZvloylbB/EJPMWEXw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/freebsd-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:57:59.211Z",
+      "integrity": "sha512-78XJTJkvPs0kz2w61301PJjXl4g7q3JqiYMZ/M/yVI73EHBrCRTgkhu9oqG7vPqq+a/yadEW8aD+agKlk5xrmg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-arm",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:05.063Z",
+      "integrity": "sha512-XlDnu2q5yoqems+xay6wSAcg9DDD7K9RLKZEBOMZm3ckNpJBvOX20tSfby8KfrrhINDyv9V2YVZKY/SpoGJI8w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:09.809Z",
+      "integrity": "sha512-pW4AC0P3it8c7do9MVM4p51FzHzdM/TZrerurgRcHJ2WTa1VQ1CIq18xncfpBJw4ojkiZZrKW2yIBWBP92j6Ug=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-ia32",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:16.606Z",
+      "integrity": "sha512-CYbnj78HsIeA+DhgUKgFCfvNsTHFhMMrinUrMZpDXJXKN8T3XViTZ/+wtHeVxEWY8ewSzTFN+nRmSwO2tZaLUQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-loong64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:20.989Z",
+      "integrity": "sha512-buwkd8nsph4R+ajRvw0qM5Hja/TXQow3ptzWO2EbG/cqcIkHloRrdlBtQlshyYGTNFvfkfJ5tpPLVkY4DtsPfQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-mips64el",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:27.374Z",
+      "integrity": "sha512-ZVykbDyk7519VwiNb9Lcj9m8XM6v5V9uKPvrEMkkEedVewf+0itkhahp4HDpgERXhwLRpWFypsGbG/J8s0QjJA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-ppc64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:31.588Z",
+      "integrity": "sha512-CAXl+Dtd9UUuJd8pKKdwh6MLm3MUMiqMPmhZ3tTSXPqfyQ3vDl6R5hZdZ/kYojK4ofXtdfSv1tFq8XzWx3heNQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-riscv64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:36.707Z",
+      "integrity": "sha512-GeXCej4IQtU1B+QlDV8W/RRvbzI3O/Stss+/bCXv4lZls5WGRtu2a+3JkA3i4qIUlMXpcHebWpF8AkJhATowuA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-s390x",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:42.447Z",
+      "integrity": "sha512-3H1weTYZPxt/WOhByszQZybS9w5lKzUn1FDMsgEChbHWQwHYQQRfBxgCcZvPhjHfKyJjIievvMmEUawJrdY9Dg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/linux-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:48.257Z",
+      "integrity": "sha512-4xTZr1FUmSoQW4XIWmit3tzQrUTZM+N3P0XV8xROKYF50XfI7xeO90+1bZvNwxIufQ9hDQVRJH5YhgPVF8A/HQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/netbsd-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:52.524Z",
+      "integrity": "sha512-sSATRjPeDBg3pdgHoQfoYBob11Kk1FGa9lui5RIHZCoCkJa9QKlvl3/vKz2usCmYYjs7ymJR/2Nnsqe+Hjt5nw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/netbsd-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:58:58.511Z",
+      "integrity": "sha512-lqnzCV+mM0gIADaKihiCg6ifgfU2L3h5E33rNQBN1Y4MaVGnzryzmvvf7UHxprpQdE8hpqLolJ9Rl+SkIRDpyw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openbsd-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:03.431Z",
+      "integrity": "sha512-AL2qJILH7lNjrDmCQDvdxMfAUIv8KMNZOvrwAQ8i8//ntL9FflhOyMJ8OZSMBb8/AWXe3/5v5S20y3zCoZWKoQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openbsd-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T20:00:09.977Z",
+      "integrity": "sha512-QtiuPytchRyC4rwUKhexJdQKvDuZ6hWloi3igqPQNUJCS1/v9EiO3UTOXR6A3FoMo4fnAKbWJdqaIwhOzh8qEw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/openharmony-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T20:03:17.337Z",
+      "integrity": "sha512-WkhYDmpTjLvGlScA1rwjRUmhl4k8oXR3cIbtqWmELgU/dFeHHlEllxDvdWcNJV9rbzCexB5vz8gtNewWLgCT7Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/sunos-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:20.135Z",
+      "integrity": "sha512-GPMSkTOtMnv2U2F8gxe4Io6qmVs+YKyp832Etqqxr0hFngmXQ3rzwytelm3GIn7T4VviRUlf3sOgBOiTdvaf7g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-arm64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T19:59:31.389Z",
+      "integrity": "sha512-PIhhEkE9uPBleRBrQEJpUn7MBnibZzbGzYWPmY3x+YoVg/95zbjB4CxPPOQ8l5tYYM4mMaCthF8/1DIfBQQyWQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-ia32",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T20:01:38.665Z",
+      "integrity": "sha512-YmJbfTlvU7Sdn9BB+4PRES4oB6pxgS37MAONj+hBr/cpXS1aBPKXxNnDbu+QCWPj0o9dgyxeq79g6c5P8KeuYA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@esbuild/win32-x64",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T20:00:43.500Z",
+      "integrity": "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/gen-mapping",
+      "version": "0.3.13",
+      "published_at": "2025-08-12T06:43:21.134Z",
+      "integrity": "sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/remapping",
+      "version": "2.3.5",
+      "published_at": "2025-08-12T06:43:35.321Z",
+      "integrity": "sha512-LI9u/+laYG4Ds1TDKSJW2YPrIlcVYOwi2fUC6xB43lueCjgxV4lffOCZCtYFiH6TNOX+tQKXx97T4IKHbhyHEQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/resolve-uri",
+      "version": "3.1.2",
+      "published_at": "2024-02-14T19:32:38.143Z",
+      "integrity": "sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/sourcemap-codec",
+      "version": "1.6.0",
+      "published_at": "2026-08-28T01:14:47.331Z",
+      "integrity": "sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@jridgewell/trace-mapping",
+      "version": "0.3.31",
+      "published_at": "2025-09-10T20:12:49.468Z",
+      "integrity": "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@napi-rs/lzma-linux-x64-gnu",
+      "version": "1.5.1",
+      "published_at": "2026-07-14T01:55:57.074Z",
+      "integrity": "sha512-oTXEIha4SsuXdTA4Iyskj0kpdx2yVXdhd75c2v3xGrHFfVMsbhTPZU/nMPL4sWKo4pBHm3aucLaqGlF696dTyQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/async-validator",
+      "version": "6.0.0",
+      "published_at": "2026-06-11T10:07:11.091Z",
+      "integrity": "sha512-D3AGQwdyE58gmvx6waVSXJ80JGO+IY5L2O8HDnSOex7JNlzB3GuN/4hyHNTdhy2qtOhkpbIjmeAN3tL993wKbA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/cascader",
+      "version": "1.22.0",
+      "published_at": "2026-07-30T07:42:45.215Z",
+      "integrity": "sha512-SffrA57aS9oub3VuI7ajPhJTPtaNxngSvtRhD40Rd8dwJ5vfWPSrVanWgeepdWFGBt7EHftIK5RUU0u3rCTwWw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/checkbox",
+      "version": "2.0.0",
+      "published_at": "2026-01-29T03:50:05.801Z",
+      "integrity": "sha512-3CXGPpAR9gsPKeO2N78HAPOzU30UdemD6HGJoWVJOpa6WleaGB5kzZj3v6bdTZab31YuWgY/RxV3VKPctn0DwQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/collapse",
+      "version": "1.2.0",
+      "published_at": "2026-01-06T15:57:07.676Z",
+      "integrity": "sha512-ZRYSKSS39qsFx93p26bde7JUZJshsUBEQRlRXPuJYlAiNX0vyYlF5TsAm8JZN3LcF8XvKikdzPbgAtXSbkLUkw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/color-picker",
+      "version": "3.1.1",
+      "published_at": "2026-02-27T01:46:26.495Z",
+      "integrity": "sha512-OHaCHLHszCegdXmIq2ZRIZBN/EtpT6Wm8SG/gpzLATHbVKc/avvuKi+zlOuk05FTWvgaMmpxAko44uRJ3M+2pg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/context",
+      "version": "2.0.2",
+      "published_at": "2026-06-05T16:17:41.840Z",
+      "integrity": "sha512-uiGpAlblCNlziHPwj4S4Iy/oemeuz/hR03mbiEjTCXwsqOIN3BOzsRMyDwpyO5Fm0vIEEJRUf9ZtbRLbhksuTA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/dialog",
+      "version": "1.10.0",
+      "published_at": "2026-06-05T15:06:10.863Z",
+      "integrity": "sha512-eDukNlz9vNszAGv7i3zKXdxEd3wgVmNxuJijYt8zvTh17QwTu8KK/bdURRd/lU4qaMzhO1HKKmMrwOnkaw0BvQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/drawer",
+      "version": "1.4.2",
+      "published_at": "2026-02-06T08:41:31.298Z",
+      "integrity": "sha512-1ib+fZEp6FBu+YvcIktm+nCQ+Q+qIpwpoaJH6opGr4ofh2QMq+qdr5DLC4oCf5qf3pcWX9lUWPYX652k4ini8Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/dropdown",
+      "version": "1.0.3",
+      "published_at": "2026-07-10T14:03:24.362Z",
+      "integrity": "sha512-YTST/N6kpqpDz3IMuM/PSSZnrDpSOA6dgHv12gPA90ZTSLv2CoqkZ0+9NtwTY6BeO7dstPblSic2QJg7dSFy/g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/form",
+      "version": "1.8.6",
+      "published_at": "2026-07-27T09:54:38.323Z",
+      "integrity": "sha512-1EXVsSKPZC6kGrIqxVck7kAWM6T65b6et/n5wIcyiaIa41VrDshD0nVLHoBDEIZr2ATQsOP6icb4XQkNFMLBAw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/image",
+      "version": "1.10.0",
+      "published_at": "2026-07-17T07:07:39.485Z",
+      "integrity": "sha512-BjeZCRQ+hw+4WAhvrw8rJvy5fckA2xpf/X2XQEOABUHvLTNB9inB98X3Mp54jYQ7g10DfWERQWHXeC4ylxp1Uw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/input",
+      "version": "1.3.1",
+      "published_at": "2026-05-25T03:56:58.037Z",
+      "integrity": "sha512-iFvTUT9W+JC/MSin2aGAk8NqsVlTzcExNC9DZariON1IWirju9NoNeEk47an4Q8iHazkoVI/y1LnDi88+CPcig=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/input-number",
+      "version": "1.6.2",
+      "published_at": "2025-11-15T15:33:26.219Z",
+      "integrity": "sha512-Gjcq7meZlCOiWN1t1xCC+7/s85humHVokTBI7PJgTfoyw5OWF74y3e6P8PHX104g9+b54jsodFIzyaj6p8LI9w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/listy",
+      "version": "1.2.3",
+      "published_at": "2026-07-16T10:04:57.665Z",
+      "integrity": "sha512-IXiMjV5s0rczLBlfh7G5nB4M3365mrEeedjwKtf5I+Ns3PqRUsebR2h5u8CeFarsVfLUPC2I5p0h09TNoOWyvQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/mentions",
+      "version": "1.12.0",
+      "published_at": "2026-08-19T07:26:53.917Z",
+      "integrity": "sha512-v5MBx8zDcqCT+uybJgKpcx3Fgrvj0m3u+A/15RlSBaMx12lLoJZTTYggC3pbYYfohcKujWWUyBz6O6Gp2vGiNA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/menu",
+      "version": "1.5.0",
+      "published_at": "2026-08-19T07:07:10.789Z",
+      "integrity": "sha512-RjvzPsZkwVEg3xu+/jDDqDeUCBJAnWylONFlGeQgg5enlNAnlpybqhaMGE/UPEIvr6hL90PGhjFBguJqj0Qb2Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/mini-decimal",
+      "version": "1.1.4",
+      "published_at": "2026-06-05T16:20:46.101Z",
+      "integrity": "sha512-xiuXcaCwyOWpD8a8scdExFl+bntNphAW8XeenL1ig2en0AAZY0Pcp4pC0dI22qJ+NvxKn9RoNIoRdqYU3BLH4w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/motion",
+      "version": "1.3.3",
+      "published_at": "2026-06-05T02:41:52.425Z",
+      "integrity": "sha512-Xh3IszxvlSv3/PLYFyC2UZi9LNB83yOnkB/LNmRzaypZLvkhqUIPS7MQpGZcCMWrNsXV2p6YTSWbSGvFpEle9A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/mutate-observer",
+      "version": "2.0.1",
+      "published_at": "2025-11-28T03:02:42.339Z",
+      "integrity": "sha512-AyarjoLU5YlxuValRi+w8JRH2Z84TBbFO2RoGWz9d8bSu0FqT8DtugH3xC3BV7mUwlmROFauyWuXFuq4IFbH+w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/notification",
+      "version": "2.0.8",
+      "published_at": "2026-08-27T08:55:42.609Z",
+      "integrity": "sha512-MTRA3b8eHE14gh5R9nlXzbWZEDEBFVkEHj/FI1VOXw2zrSnSxqbuuU3drsq+k53e6MHwtegoFay1tnNYhtl61Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/overflow",
+      "version": "1.0.1",
+      "published_at": "2026-04-14T09:48:43.242Z",
+      "integrity": "sha512-syfmgAABaHCnCDzPwHZ/2tuvIcpOO3jefYZMmfkN+pmo8HKTzsfhS57vxo4ksPdN0By+uWVJhJWNFozNBxi2eA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/pagination",
+      "version": "1.4.0",
+      "published_at": "2026-06-09T03:43:37.458Z",
+      "integrity": "sha512-CW1g7P9V8u+e8JQdUsl2RWg+GCsoee0mtJjZUCCxn/vb3jzOwDKm6hAdwddHCVBfWJ58eGUBZz3IvnU8rRktjw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/picker",
+      "version": "1.12.0",
+      "published_at": "2026-07-27T06:17:49.719Z",
+      "integrity": "sha512-0FZGgDiDZFMm2hcfGv4jyjm7yWIj2MiwfeTzLL0vWkO+8cCSKdiM9XhWpkn1aAsoI2EwUy48Oz2cGfvL8ZKrfw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/portal",
+      "version": "2.2.1",
+      "published_at": "2026-06-05T16:18:24.879Z",
+      "integrity": "sha512-ck+r1kW/JSv0wxPji3KN2ss9K6Z0qqwusw/mf/0JobXhZ8hC2ejZwCJObW/SvDi0uhA0VzmCnx0CaCci95tcmA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/progress",
+      "version": "1.0.3",
+      "published_at": "2026-08-27T03:36:57.852Z",
+      "integrity": "sha512-Q1nPLIvKr95el/q76yaBh5nv1hqCsWaHQb8U7vXEDMefEhHgM7n3CPoN+o4LHnTyANQHmMFgoS/naAT4Bhxuaw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/qrcode",
+      "version": "2.0.0",
+      "published_at": "2026-06-11T07:29:17.133Z",
+      "integrity": "sha512-aAv3QhPP1xyafuTZOxub6a54pCeBnN3IwQkpETrBtthq4BL5IgxnCbuoBWPDpdLw1y1j6BgBUCAKV92+yX06Dw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/rate",
+      "version": "1.0.1",
+      "published_at": "2025-11-28T03:00:09.457Z",
+      "integrity": "sha512-bkXxeBqDpl5IOC7yL7GcSYjQx9G8H+6kLYQnNZWeBYq2OYIv1MONd6mqKTjnnJYpV0cQIU2z3atdW0j1kttpTw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/resize-observer",
+      "version": "1.1.2",
+      "published_at": "2026-03-24T09:44:59.256Z",
+      "integrity": "sha512-t/Bb0W8uvL4PYKAB3YcChC+DlHh0Wt5kM7q/J+0qpVEUMLe7Hk5zuvc9km0hMnTFPSx5Z7Wu/fzCLN6erVLE8Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/segmented",
+      "version": "1.3.0",
+      "published_at": "2025-12-18T04:02:17.770Z",
+      "integrity": "sha512-5J/bJ01mbDnoA6P/FW8SxUvKn+OgUSTZJPzCNnTBntG50tzoP7DydGhqxp7ggZXZls7me3mc2EQDXakU3iTVFg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/select",
+      "version": "1.10.1",
+      "published_at": "2026-08-11T08:54:17.163Z",
+      "integrity": "sha512-H+yQsl+qED9NilQ3g6zdpsMwUgwVjrcMTkNHAWRVU/MoNCYgTbDgU+MIMgZDK+rVdd2JUfI/MkysMcZZ0cyQKw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/slider",
+      "version": "1.1.1",
+      "published_at": "2026-05-15T02:14:07.948Z",
+      "integrity": "sha512-LSzgWGYDgeCDgR4r1XlU29gbYws6HpLnvJd/uMhLeW/vQgxldeR+Wb4uzHDCHiYEbr1bnEHWdjkPxjJRHxuiig=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/steps",
+      "version": "1.2.3",
+      "published_at": "2026-08-27T08:54:27.119Z",
+      "integrity": "sha512-/b9gHcvDGjTDWJZW7+1kKFvzs0jrEeQ8mFvvIgX+h7xNT0FsOYODJYKjyJR4fPbvMBCfCOEqaBK66HBxov5BQA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/switch",
+      "version": "1.0.3",
+      "published_at": "2025-11-28T02:58:01.580Z",
+      "integrity": "sha512-Jgi+EbOBquje/XNdofr7xbJQZPYJP+BlPfR0h+WN4zFkdtB2EWqEfvkXJWeipflwjWip0/17rNbxEAqs8hVHfw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/table",
+      "version": "1.11.1",
+      "published_at": "2026-08-03T07:45:37.496Z",
+      "integrity": "sha512-OWdS6DMmeWb7bJBGqPxYZpQbzBlBiXZUu2sqo6Ii7Sjs9GeK1IsrXrWk26SL2c6KEseabswdxrRj7WUm9LdECw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/tabs",
+      "version": "1.13.0",
+      "published_at": "2026-08-19T07:29:03.069Z",
+      "integrity": "sha512-3FXr+9ZII8tFLWuDWrgjRaxZd2mazkKJAGRFEfVmp4r1qnBglOlxQ78l54Td1aj6/iFaaEReKSAF2HToztU5uw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/tooltip",
+      "version": "1.5.2",
+      "published_at": "2026-08-27T06:33:06.411Z",
+      "integrity": "sha512-VLq4BclU3LgRe46g2hTr2bdsM8tFYs7dVwpuD88rPNNg4lCGe8mBSS4FiRzYzS+ffnZ46y4SI8KYKo9K7qBnhw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/tour",
+      "version": "2.4.0",
+      "published_at": "2026-03-11T09:29:02.248Z",
+      "integrity": "sha512-aui4r4TqmTzwaBgcQxHYep8kM8PTjZFufjokObpy35KfFeZ0k9ArquWFZqegQlH24P14t+F0qO0mGTgzlav1yg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/tree",
+      "version": "1.4.0",
+      "published_at": "2026-07-30T07:22:49.368Z",
+      "integrity": "sha512-dGsJGDJQedA0BqqVgj3F8BvHXTSZijyhTXdbAdkcx8lynzZkty/CV3Z3LOm/fxz+BCfl3dfGiAQpb7Q5XNvl0Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/tree-select",
+      "version": "1.16.1",
+      "published_at": "2026-08-04T07:49:19.987Z",
+      "integrity": "sha512-a1Oi6EJhqAhdOxxupdJi6fP0RPHMKn5TcfkX2+llaQ4lF4nwfH7b6SCHcnsybaa2s+pk1yZYwVyeOYkDnEBRdg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/trigger",
+      "version": "3.10.1",
+      "published_at": "2026-07-17T04:07:25.161Z",
+      "integrity": "sha512-mXlDN0IXdtV8Yqqm8195ECCyrbmfvvfKvwVvSlH0+qvKD6BUF8gRhEjSy0FOcD1+CcDRHgTiX99LoxfQrmh3Cw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/upload",
+      "version": "1.1.1",
+      "published_at": "2026-05-26T07:36:38.804Z",
+      "integrity": "sha512-GvYWSKeaJTOxxC5p6+nOSadzfvXA1h8C/iHFPFZX+szH3JUXrvs+DLiW8YUTBgvMh8m63mJeHrlYlJzAlg+pDA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/util",
+      "version": "1.13.0",
+      "published_at": "2026-09-01T03:20:45.169Z",
+      "integrity": "sha512-IXf2zBfZrbQGT+G8LxnoICDBGnMHIPIiq5HCRn3EDfKUx28x1rnbZBj46ULJf4sM8ImTG1SepqfNBdxZziqQ4w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rc-component/virtual-list",
+      "version": "1.5.1",
+      "published_at": "2026-07-31T06:37:10.103Z",
+      "integrity": "sha512-boqHxdtyWC88u8quYgEO49bcBy5fzRiOcnBge+N4nLzs2k8hUQ/yw7JE9dM6yCBE4jSm5YSHVCVMS+suBuJGKA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@redocly/ajv",
+      "version": "8.11.2",
+      "published_at": "2024-09-06T14:38:10.286Z",
+      "integrity": "sha512-io1JpnwtIcvojV7QKDUSIuMN/ikdOUd1ReEnUnMKGfDVridQZ31J0MmIuqwuRjWDZfmvr+Q0MqCcfHM2gTivOg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@redocly/config",
+      "version": "0.22.0",
+      "published_at": "2025-03-04T10:32:57.451Z",
+      "integrity": "sha512-gAy93Ddo01Z3bHuVdPWfCwzgfaYgMdaZPcfL7JZ7hWJoK9V0lXDbigTWkhiPFAaLWzbOJ+kbUQG1+XwIm0KRGQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@redocly/openapi-core",
+      "version": "1.34.19",
+      "published_at": "2026-08-10T15:58:31.838Z",
+      "integrity": "sha512-o/0VgsBXgwcY1lyeqcVtSGdTQAPnVggo0fbFVPlxl5XVDKUcVH0OLRqt3CbkwByT5FU305E0iE0O7MzThjDblw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rolldown/pluginutils",
+      "version": "1.0.0-rc.3",
+      "published_at": "2026-02-04T12:10:47.417Z",
+      "integrity": "sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-arm-eabi",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:42.439Z",
+      "integrity": "sha512-UZ8sUxPTiHWYX9QNdJedb1kDZSpS1t/VPWBWGSgqHNi9w3Cu6IXvu2mzbhiTiPvtrqgTQJ+zqiAq2iPIPilpaQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-android-arm64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:18.758Z",
+      "integrity": "sha512-cQ4nFQABN5cDvDpbvJ7bMStCpnaVxynZrRMfUJYgxcIk9Sh54FIO1vtfkg0B69REjER77ioZ/ov+eAApx/KmLQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-darwin-arm64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:27.481Z",
+      "integrity": "sha512-FQNqd1lRy/0QhDk3xeRIkSBiCpXCiDnZO3YLVdcDKN1UBiKToNftCzcXYNLshmPDUMlu2TdeS8tGcsU6f3YF1Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-darwin-x64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:29.530Z",
+      "integrity": "sha512-pvD16V939D3CloK0+qikpGaxiPrDUXTe7Y5cWOMkMSy7m1cawa8EGy/kXYi/G/cKAC4HDAbSnzCIk1WmsoOKXg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-freebsd-arm64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:17.537Z",
+      "integrity": "sha512-pcFGeL2345VwdTnJhA6zLbew+YgWB0qBG2+dMtXjCicf6+rm6kO6cOoh5VnTe0ZMrMRgRyuHmCJxZWrIdzYuOw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-freebsd-x64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:03:16.514Z",
+      "integrity": "sha512-mRJlqSRulVzcKq/LKA6ICSIc3K/l4fzlVn/gePn2nXIHy8seRi5z/eeRE0d/XMBxcMldiXtQTSpRj0tkkC3g8Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm-gnueabihf",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:24.642Z",
+      "integrity": "sha512-YDUNvVM85TI3g/1OpnqKP1h4NeW/j64DfWMf+G3M809xNk1bJSnpFp4sh83NpmVE5DXnkh8ULor4LTVZKoYLHw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm-musleabihf",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:48.665Z",
+      "integrity": "sha512-7Mcn71p9ZuQFAj+h+dhQXy/yeLePRS2yKRnmW1DijA9thKO5qap0GNOIQK4yQ6iP3SU0Mrb/yWo8h8vgRba8lw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm64-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:32.522Z",
+      "integrity": "sha512-4YiLQTX6U4CSl0L9cluep9A9W6UmTfqBDc2/CH6wlu54pl4E7Jn3cOD8oxzvBDEGk/JMKgJ47C8g+radF7mwvg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-arm64-musl",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:47.386Z",
+      "integrity": "sha512-2ra8F7w8OquwZN9z2/fKFnli69wa8PLwaVzRMIPGb13ByMJwC28Fbp8YcVGoUhlYMTt7j5j9bNgpysrN2UM+vw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-loong64-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:16.126Z",
+      "integrity": "sha512-Sy20ncyhjmBP0Ml+UvQbimjlk6VFgjW5uNP+qqwHB00mTE8Bl2C1TuHTlRwK2YoXeZbee5lP2XevBWVkAQAtSQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-loong64-musl",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:21.808Z",
+      "integrity": "sha512-noITLp8oNjYliPnGWmLyelIHwULGqbHloQHGw1rtxbWhTuWooRpnZarZQJ1y9EUC4szuCusCc+HEpUtxpIwYvA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-ppc64-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:48.376Z",
+      "integrity": "sha512-hlxxXd+F1mWiAcaFR7Sv9ZQT6m6UfI8+Vy/kFJzztq2pDMU/0wZ9sish0iszNZvsQDo8Gc0i5yuFEOz5dDf6fA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-ppc64-musl",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:40.546Z",
+      "integrity": "sha512-EF7OpqQTQ/BvGqLzUi4rEHuagCV9MugAUXSHemwPW5vxZ75RR+jxO/2j95Ph2dalMpFHSVECjRoioHZgA9zOYA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-riscv64-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:28.016Z",
+      "integrity": "sha512-wQO3JesW9PRkwlabQ27y7sPfVOOTLRG73I4F2UYHG5PXun3J9U3y+b7ezVKSYbsvSKGQ1k1cq8Qlun4C9kLt3w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-riscv64-musl",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:11.425Z",
+      "integrity": "sha512-ouAGwhO6wHRXdnOVCOsB0tRFkA7nhNB2Nwax6oECXN0YiN8EYUTBAOudADOB1PI+yDL61TeNx/u7MVCzksNbkQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-s390x-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:24.990Z",
+      "integrity": "sha512-q2R38Sn+1J8RxhfJ+T54wSWmyKXWec+9jgDfqO2AtArEqHO5R2aeayp5H5OYLr5UYDVGsVaZPEFUooMhYCdz5A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-x64-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:08.775Z",
+      "integrity": "sha512-gfI5T24WLLuFfSKw7Go/zDXjAAV0fny0swTaDv+WjK7vqcw4cRhFfdsyKL1n+ukI+ooBxn3bVQnyrn06WpI50w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-linux-x64-musl",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:03:25.481Z",
+      "integrity": "sha512-4h6XqthmB4Hspji84wvgk+ElodTsGj+dbZqHJHHtKxj4mYq0ANSEEPX9ys3moJueqsRjwpaJYH7874Itwnj2ow=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-openbsd-x64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:17.981Z",
+      "integrity": "sha512-dlfCOa87o1VAYegLQ9EKilx2JCeRofiyPGhTCmqnuXZ6bMPiycO1rq1+sKoulAp7pGLIsTIw+1x5R+zgh5LhhA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-openharmony-arm64",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:44.350Z",
+      "integrity": "sha512-cjkLbOlfcm3QGhMM1J5zaZjsw1GggbN6rw9UTSSRrPrR1KkcXnN7Uq9rPw34xImQ9VOY9GN+6u2Zj80B9ptkcw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-arm64-msvc",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:00:46.869Z",
+      "integrity": "sha512-Li1KdUnWGE4N3e1F/B4RTB1ms+nG4WBgjByO46pkeBVX/2UBsY53xf5vK9WygVmnH3RwncIST7lkSdLSY6P9lg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-ia32-msvc",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:04.890Z",
+      "integrity": "sha512-t4ZYOSoLTgwhuFMrmTMLx/+i1DQVK7HYqMc6kY46EApwi8X0nIVphzdNoThU3xt6n+N5urG1/gxBdCaKDLavfg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-x64-gnu",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:54.813Z",
+      "integrity": "sha512-RgroPfMmKlD1RzSDxvwgcPiy2HNQKoYV7OmwIXDsk73uKW5t6B/V8KIy27SMv/FNXFo/oSBtWc9J0X7t91ezZg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@rollup/rollup-win32-x64-msvc",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:01:59.913Z",
+      "integrity": "sha512-at8QVep6S3h5Y6gSbdGU06bRY5WJkf6WUduM9YtvYMbYhB1MOFfUgc6kehitQXzOtMSaT70q7f9ydPhpqu821w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@standard-schema/spec",
+      "version": "1.1.0",
+      "published_at": "2025-12-15T20:49:46.431Z",
+      "integrity": "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__core",
+      "version": "7.20.5",
+      "published_at": "2023-11-20T23:44:10.721Z",
+      "integrity": "sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__generator",
+      "version": "7.27.0",
+      "published_at": "2025-04-03T16:02:42.530Z",
+      "integrity": "sha512-ufFd2Xi92OAVPYsy+P4n7/U7e68fex0+Ee8gSG9KX7eo084CWiQ4sdxktvdl0bOPupXtVJPY19zk6EwWqUQ8lg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__template",
+      "version": "7.4.4",
+      "published_at": "2023-11-06T23:40:08.640Z",
+      "integrity": "sha512-h/NUaSyG5EyxBIp8YRxo4RMe2/qQgvyowRwVMzhYhBCONbW8PUsg4lkFMrhgZhUe5z3L3MiLDuvyJ/CaPa2A8A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/babel__traverse",
+      "version": "7.28.0",
+      "published_at": "2025-07-31T21:02:31.553Z",
+      "integrity": "sha512-8PvcXf70gTDZBgt9ptxJ8elBeBjcLOAcOtoO/mPJjtji1+CdGbHgm77om1GrsPxsiE+uXIpNSK64UYaIwQXd4Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/estree",
+      "version": "1.0.9",
+      "published_at": "2026-05-06T21:01:00.975Z",
+      "integrity": "sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/node",
+      "version": "24.13.3",
+      "published_at": "2026-07-08T06:48:03.261Z",
+      "integrity": "sha512-Dh8vAsV36ig5wa9OX4pXvMc9D3Veibfw2wix0CUwYODLD8nkj9UsLjASr49nPg+2eKzxhBV+v7L8pXvT4e639Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/react",
+      "version": "19.2.18",
+      "published_at": "2026-07-30T21:54:03.456Z",
+      "integrity": "sha512-AnzbBERsrLKtk2XSfTbYRLjQPdy116Sty4q+T+Bp3IC4l6jNBvreVPAHmpq9qhXQM7CXZPjLVmGMw9sy+hxQ3w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@types/react-dom",
+      "version": "19.2.5",
+      "published_at": "2026-08-23T21:05:23.671Z",
+      "integrity": "sha512-fMPwH9v7r/pp43yUd2/Mbiex5KouJwwR3dzHkhLREUC6764VyDsqxhAxv6OFEYR1RhjOyD1naqba8ECDBe7ZQg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "@vitejs/plugin-react",
+      "version": "5.2.0",
+      "published_at": "2026-03-12T14:27:45.817Z",
+      "integrity": "sha512-YmKkfhOAi3wsB1PhJq5Scj3GXMn3WvtQ/JC0xoopuHoXSdmtdStOpFrYaT1kie2YgFBcIe64ROzMYRjCrYOdYw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "agent-base",
+      "version": "7.1.4",
+      "published_at": "2025-07-07T17:44:01.356Z",
+      "integrity": "sha512-MnA+YT8fwfJPgBx3m60MNqakm30XOkyIoH1y6huTQvC0PwZG7ki8NacLBcrPbNoo8vEZy7Jpuk7+jMO+CUovTQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ansi-colors",
+      "version": "4.1.3",
+      "published_at": "2022-05-16T15:48:22.352Z",
+      "integrity": "sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "antd",
+      "version": "6.6.2",
+      "published_at": "2026-08-28T05:58:12.973Z",
+      "integrity": "sha512-aTOPWXsqfWrlSiI0a1qR9UWR4jBCTJ8FNZfZmYQP9/aGGLJSrw9/c5uE+4vSVSt3riQlIPAwR3BcAgEHmE7GMg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "argparse",
+      "version": "2.0.1",
+      "published_at": "2020-08-28T21:14:26.713Z",
+      "integrity": "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "balanced-match",
+      "version": "1.0.2",
+      "published_at": "2021-04-06T12:51:09.276Z",
+      "integrity": "sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "baseline-browser-mapping",
+      "version": "2.11.20",
+      "published_at": "2026-08-27T23:41:49.280Z",
+      "integrity": "sha512-H0ulySigv6icDJ1F7SjtdCD6PrhTpdYCmP0CactWy1+ekh0AFd0o1Wn5T8b+hnTmdBx19u9yhL6wvCylXMY7zw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "brace-expansion",
+      "version": "2.1.4",
+      "published_at": "2026-07-30T10:15:01.601Z",
+      "integrity": "sha512-hGfVzPxthbf3+2yjg/RBs60cB0FhqBS/zvdV/4wn4/BmN0bNMMHPc4V/BbFieqf1TKAGGAHnY4eSjajCl0f2Xg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "browserslist",
+      "version": "4.28.8",
+      "published_at": "2026-08-08T09:59:08.350Z",
+      "integrity": "sha512-V2NpofLblG64mfOtSgDhOJESZEGogzDMBv/q+W6oc4LXWP/q75eOXoOaaOu1EOadB9U4Bwx/e0yzbvwKH8zalA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "caniuse-lite",
+      "version": "1.0.30001810",
+      "published_at": "2026-08-24T20:04:16.328Z",
+      "integrity": "sha512-TITQPUkaz+aVk5GL6NhOdwk1aEaNTSDPsGFWrTuhKGtjTF70jL/Oht2W4c6rXUe5fu7Ie19VIahAXHIIiWWNeg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "change-case",
+      "version": "5.4.4",
+      "published_at": "2024-04-03T22:34:57.150Z",
+      "integrity": "sha512-HRQyTk2/YPEkt9TnUPbOpr64Uw3KOicFWPVBb+xiHvd6eBx/qPr9xqfBFDT8P2vWsvvz4jbEkfDe71W3VyNu2w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "clsx",
+      "version": "2.1.1",
+      "published_at": "2024-04-23T05:26:04.645Z",
+      "integrity": "sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "colorette",
+      "version": "1.4.0",
+      "published_at": "2021-09-07T17:06:15.141Z",
+      "integrity": "sha512-Y2oEozpomLn7Q3HFP7dpww7AtMJplbM9lGZP6RDfHqmbeRjiwRg4n6VM6j4KLmRke85uWEI7JqF17f3pqdRA0g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "compute-scroll-into-view",
+      "version": "3.1.1",
+      "published_at": "2025-01-10T19:10:35.418Z",
+      "integrity": "sha512-VRhuHOLoKYOy4UbilLbUzbYg93XLjv2PncJC50EuTWPA3gaja1UjBsUP/D/9/juV3vQFr6XBEzn9KCAHdUvOHw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "convert-source-map",
+      "version": "2.0.0",
+      "published_at": "2022-10-17T22:06:48.628Z",
+      "integrity": "sha512-Kvp459HrV2FEJ1CAsi1Ku+MY3kasH19TFykTz2xWmMeq6bk2NU3XXvfJ+Q61m0xktWwt+1HSYf3JZsTms3aRJg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "cookie",
+      "version": "1.1.1",
+      "published_at": "2025-11-26T17:50:20.759Z",
+      "integrity": "sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "csstype",
+      "version": "3.2.3",
+      "published_at": "2025-11-17T11:42:27.045Z",
+      "integrity": "sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "dayjs",
+      "version": "1.11.23",
+      "published_at": "2026-08-17T11:52:35.217Z",
+      "integrity": "sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "debug",
+      "version": "4.4.3",
+      "published_at": "2025-09-13T17:25:19.732Z",
+      "integrity": "sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "electron-to-chromium",
+      "version": "1.5.420",
+      "published_at": "2026-09-01T22:05:17.602Z",
+      "integrity": "sha512-2yD6XreGusOfNV+dUcvipJEXc3n/n7fgr7996aszTG+YY5E4mqM4tOq/3uhP129cazL9YHbVWSpc79ePotWtPA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "esbuild",
+      "version": "0.28.2",
+      "published_at": "2026-08-08T20:00:55.454Z",
+      "integrity": "sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "escalade",
+      "version": "3.2.0",
+      "published_at": "2024-08-29T22:59:36.690Z",
+      "integrity": "sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fast-deep-equal",
+      "version": "3.1.3",
+      "published_at": "2020-06-08T07:27:28.474Z",
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fdir",
+      "version": "6.5.0",
+      "published_at": "2025-08-14T16:56:03.948Z",
+      "integrity": "sha512-tIbYtZbucOs0BRGqPJkshJUYdL+SDH7dVM8gjy+ERp3WAUjLEFJE+02kanyHtwjWOnwrKYBiwAmM0p4kLJAnXg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "fsevents",
+      "version": "2.3.3",
+      "published_at": "2023-08-21T16:24:22.854Z",
+      "integrity": "sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "gensync",
+      "version": "1.0.0-beta.2",
+      "published_at": "2020-10-27T20:43:40.443Z",
+      "integrity": "sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "https-proxy-agent",
+      "version": "7.0.6",
+      "published_at": "2024-12-07T03:32:09.302Z",
+      "integrity": "sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "index-to-position",
+      "version": "1.2.0",
+      "published_at": "2025-09-25T04:03:35.523Z",
+      "integrity": "sha512-Yg7+ztRkqslMAS2iFaU+Oa4KTSidr63OsFGlOrJoW981kIYO3CGCS3wA95P1mUi/IVSJkn0D479KTJpVpvFNuw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "is-mobile",
+      "version": "5.0.0",
+      "published_at": "2024-10-16T11:29:37.295Z",
+      "integrity": "sha512-Tz/yndySvLAEXh+Uk8liFCxOwVH6YutuR74utvOcu7I9Di+DwM0mtdPVZNaVvvBUM2OXxne/NhOs1zAO7riusQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "js-levenshtein",
+      "version": "1.1.6",
+      "published_at": "2019-01-10T21:27:12.131Z",
+      "integrity": "sha512-X2BB11YZtrRqY4EnQcLX5Rh373zbK4alC1FW7D7MBhL2gtcC17cTnr6DmfHZeS0s2rTHjUTMMHfG7gO8SSdw+g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "js-tokens",
+      "version": "4.0.0",
+      "published_at": "2018-01-28T11:58:58.170Z",
+      "integrity": "sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "js-yaml",
+      "version": "4.3.2",
+      "published_at": "2026-08-26T20:42:48.747Z",
+      "integrity": "sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "jsesc",
+      "version": "3.1.0",
+      "published_at": "2024-12-11T08:24:34.551Z",
+      "integrity": "sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "json-schema-traverse",
+      "version": "1.0.0",
+      "published_at": "2020-12-13T10:56:54.719Z",
+      "integrity": "sha512-NM8/P9n3XjXhIZn1lLhkFaACTOURQXjWhV4BA/RnOv8xvgqtqpAX9IO4mRQxSx1Rlo4tqzeqb0sOlruaOy3dug=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "json2mq",
+      "version": "0.2.0",
+      "published_at": "2015-01-15T06:37:41.006Z",
+      "integrity": "sha512-SzoRg7ux5DWTII9J2qkrZrqV1gt+rTaoufMxEzXbS26Uid0NwaJd123HcoB80TgubEppxxIGdNxCx50fEoEWQA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "json5",
+      "version": "2.2.3",
+      "published_at": "2022-12-31T17:11:32.047Z",
+      "integrity": "sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "lru-cache",
+      "version": "5.1.1",
+      "published_at": "2018-11-21T01:44:45.407Z",
+      "integrity": "sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "minimatch",
+      "version": "5.1.9",
+      "published_at": "2026-02-25T17:16:47.801Z",
+      "integrity": "sha512-7o1wEA2RyMP7Iu7GNba9vc0RWWGACJOCZBJX2GJWip0ikV+wcOsgVuY9uE8CPiyQhkGFSlhuSkZPavN7u1c2Fw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "ms",
+      "version": "2.1.3",
+      "published_at": "2020-12-08T13:54:35.223Z",
+      "integrity": "sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "nanoid",
+      "version": "3.3.18",
+      "published_at": "2026-08-07T16:41:05.696Z",
+      "integrity": "sha512-DTg4MJbGMWkfi6VZFdNt2/caMbQy4Ou+Op/hJQvGEWcnVfoA1QA+xzRKAzw9jD6+GVOOeYr/mIcuDSdug6F6+w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "node-releases",
+      "version": "2.0.54",
+      "published_at": "2026-08-27T14:05:45.552Z",
+      "integrity": "sha512-YHs7BmmcsdAI5Ozuf8JZo6PT0mv2GIWC9vMfvUC3dp65M8hn7Ux8CPL+2oBI7juNuj9d0ndhTcznq2ODBps9cQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "openapi-typescript",
+      "version": "7.13.0",
+      "published_at": "2026-02-11T16:02:25.378Z",
+      "integrity": "sha512-EFP392gcqXS7ntPvbhBzbF8TyBA+baIYEm791Hy5YkjDYKTnk/Tn5OQeKm5BIZvJihpp8Zzr4hzx0Irde1LNGQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "parse-json",
+      "version": "8.3.0",
+      "published_at": "2025-04-09T09:02:03.317Z",
+      "integrity": "sha512-ybiGyvspI+fAoRQbIPRddCcSTV9/LsJbf0e/S85VLowVGzRmokfneg2kwVW/KU5rOXrPSbF1qAKPMgNTqqROQQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "picocolors",
+      "version": "1.1.1",
+      "published_at": "2024-10-16T18:20:03.921Z",
+      "integrity": "sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "picomatch",
+      "version": "4.0.7",
+      "published_at": "2026-08-24T14:36:23.690Z",
+      "integrity": "sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "pluralize",
+      "version": "8.0.0",
+      "published_at": "2019-05-25T05:06:57.998Z",
+      "integrity": "sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "postcss",
+      "version": "8.5.26",
+      "published_at": "2026-08-06T08:33:00.043Z",
+      "integrity": "sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react",
+      "version": "19.2.8",
+      "published_at": "2026-07-21T15:41:28.716Z",
+      "integrity": "sha512-PWaYA1L/q9u2u7xYQi+Y3L3Yfnie7XyLeaJICV1MGD6LprsBxcAqGjYyr0eY3p+QdsA+x/Irkt4Qif8D63+Sbw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-dom",
+      "version": "19.2.8",
+      "published_at": "2026-07-21T15:41:41.267Z",
+      "integrity": "sha512-rVprimfGBG3DR+Tq0IQG2DT5PxKth1WIGDmj5yPmlzr4YBe7uyE+Du4oVqTDXZSHGGGXRtTJEGSSePyQCMBglQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-is",
+      "version": "19.2.8",
+      "published_at": "2026-07-21T15:42:03.130Z",
+      "integrity": "sha512-s5un28nYxKJw5gvUHyW5PCC28CvBqLu9r3cWgzHT4Vo/5fqqkFcdRYsGcKf50WMPpjjFZS5d76fn3YCo2njKwQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-refresh",
+      "version": "0.18.0",
+      "published_at": "2025-10-01T21:39:03.378Z",
+      "integrity": "sha512-QgT5//D3jfjJb6Gsjxv0Slpj23ip+HtOpnNgnb2S5zU3CB26G/IDPGoy4RJB42wzFE46DRsstbW6tKHoKbhAxw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-router",
+      "version": "7.18.3",
+      "published_at": "2026-08-28T14:30:10.445Z",
+      "integrity": "sha512-gyXgtdr5uACJ5b1Q4udzjVV+tb/rlHIMJKuJ0e89R4Kzgz47z/rgP0dIKxktqIEUhDHluGTPJJH/wRha7CyqsA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "react-router-dom",
+      "version": "7.18.3",
+      "published_at": "2026-08-28T14:30:10.417Z",
+      "integrity": "sha512-ytVbyBBM7vMfRCam25r0WMhSVSom909A8p+8m0/f1w853dz/xfFu6etAT2SEbVoSnI+ZoPRDqIsQXVT89gp7kg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "require-from-string",
+      "version": "2.0.2",
+      "published_at": "2018-04-09T09:49:47.301Z",
+      "integrity": "sha512-Xf0nWe6RseziFMu+Ap9biiUbmplq6S9/p+7w7YXP/JBHhrUDDUhwa+vANyubuqfZWTveU//DYVGsDG7RKL/vEw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "rollup",
+      "version": "4.63.1",
+      "published_at": "2026-08-28T06:02:29.329Z",
+      "integrity": "sha512-3Df9jsstwhccuEfmAMi9l8XUh/GOkVObmFTU7CCVBysEbcOZLl84jCtaAZMcPiMz2EGKsATzQcU+Xr3n/wU6cg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "scheduler",
+      "version": "0.27.0",
+      "published_at": "2025-10-01T21:39:15.208Z",
+      "integrity": "sha512-eNv+WrVbKu1f3vbYJT/xtiF5syA5HPIMtf9IgY/nKg0sWqzAUEvqY/xm7OcZc/qafLx/iO9FgOmeSAp4v5ti/Q=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "scroll-into-view-if-needed",
+      "version": "3.1.0",
+      "published_at": "2023-09-13T15:23:12.302Z",
+      "integrity": "sha512-49oNpRjWRvnU8NyGVmUaYG4jtTkNonFZI86MmGRDqBphEK2EXT9gdEUoQPZhuBM8yWHxCWbobltqYO5M4XrUvQ=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "semver",
+      "version": "6.3.1",
+      "published_at": "2023-07-10T22:38:41.428Z",
+      "integrity": "sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "set-cookie-parser",
+      "version": "2.7.2",
+      "published_at": "2025-10-27T19:50:59.587Z",
+      "integrity": "sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "source-map-js",
+      "version": "1.2.1",
+      "published_at": "2024-09-08T16:22:55.645Z",
+      "integrity": "sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "string-convert",
+      "version": "0.2.1",
+      "published_at": "2014-11-22T12:17:11.758Z",
+      "integrity": "sha512-u/1tdPl4yQnPBjnVrmdLo9gtuLvELKsAoRapekWggdiQNvvvum+jYF329d84NAa660KQw7pB2n36KrIKVoXa3A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "stylis",
+      "version": "4.4.0",
+      "published_at": "2026-04-19T14:30:12.694Z",
+      "integrity": "sha512-5Z9ZpRzfuH6l/UAvCPAPUo3665Nk2wLaZU3x+TLHKVzIz33+sbJqbtrYoC3KD4/uVOr2Zp+L0LySezP9OHV9yA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "supports-color",
+      "version": "10.2.2",
+      "published_at": "2025-09-08T14:49:55.476Z",
+      "integrity": "sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "throttle-debounce",
+      "version": "5.0.2",
+      "published_at": "2024-06-24T14:06:21.768Z",
+      "integrity": "sha512-B71/4oyj61iNH0KeCamLuE2rmKuTO5byTOSVwECM5FA7TiAiAW+UqTKZ9ERueC4qvgSttUhdmq1mXC3kJqGX7A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "tinyglobby",
+      "version": "0.2.17",
+      "published_at": "2026-05-30T19:57:21.717Z",
+      "integrity": "sha512-wXR/dYpcqKmfWpEdZjiKJOwCNFndD0DMnrW/cYjVGttEkBfVgcLFHoNrlj47mjOVic9yyNu65alsgF4NQyTa2g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "type-fest",
+      "version": "4.41.0",
+      "published_at": "2025-05-06T07:20:19.356Z",
+      "integrity": "sha512-TeTSQ6H5YHvpqVwBRcnLDCBnDOHWYu7IvGbHT6N8AOymcr9PJGjc1GTtiWZTYg0NCgYwvnYWEkVChQAr9bjfwA=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "typescript",
+      "version": "5.9.3",
+      "published_at": "2025-09-30T21:19:38.784Z",
+      "integrity": "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "undici-types",
+      "version": "7.18.2",
+      "published_at": "2026-01-06T15:57:40.133Z",
+      "integrity": "sha512-AsuCzffGHJybSaRrmr5eHr81mwJU3kjw6M+uprWvCXiNeN9SOGwQ3Jn8jb8m3Z6izVgknn1R0FTCEAP2QrLY/w=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "update-browserslist-db",
+      "version": "1.3.2",
+      "published_at": "2026-08-27T19:44:44.805Z",
+      "integrity": "sha512-UQ+MSxlhRm1bzjhU+DcuXfjFO1FzNtqhK5+9Yvlp90ItDLk5vT932A0rFu619nf7RVS+Y/VeaUW1jaRDqZ8VJw=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "uri-js-replace",
+      "version": "1.0.1",
+      "published_at": "2024-08-08T06:47:53.305Z",
+      "integrity": "sha512-W+C9NWNLFOoBI2QWDp4UT9pv65r2w5Cx+3sTYFvtMdDBxkKt1syCqsUdSFAChbEe1uK5TfS04wt/nGwmaeIQ0g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "vite",
+      "version": "7.3.6",
+      "published_at": "2026-06-25T01:51:49.605Z",
+      "integrity": "sha512-4XP60spRGjSZFf1qYH+dJIkK2znL3zQfl9KkOV9MkkRR/3Dls0dxaBsQPTloEc5BLXWPL9vsOxopxyKoMmDueg=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "yallist",
+      "version": "3.1.1",
+      "published_at": "2019-09-30T20:07:18.343Z",
+      "integrity": "sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "yaml-ast-parser",
+      "version": "0.0.43",
+      "published_at": "2018-11-15T13:53:21.202Z",
+      "integrity": "sha512-2PTINUwsRqSd+s8XxKaJWQlUuEMHJQyEuh2edBbW8KNJz0SJPwUSD2zRWqezFEdN7IzAgeuYHFUCF7o8zRdZ0A=="
+    },
+    {
+      "ecosystem": "npm",
+      "name": "yargs-parser",
+      "version": "21.1.1",
+      "published_at": "2022-08-04T21:13:43.411Z",
+      "integrity": "sha512-tVpsJW7DdjecAiFpbIB1e3qxIQsE6NoPc5/eTdrbbIC4h0LVsWhnoa3g+m2HclBIujHzsxZ4VJVA+GUuc2/LBw=="
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "latest_locked_artifact_at": "2026-07-28T13:50:58.129724Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "latest_locked_artifact_at": "2026-07-23T20:16:13.995706Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "anyio",
+      "version": "4.15.0",
+      "latest_locked_artifact_at": "2026-09-02T21:46:36.957728Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "attrs",
+      "version": "26.1.0",
+      "latest_locked_artifact_at": "2026-03-19T14:22:25.026315Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "certifi",
+      "version": "2026.7.22",
+      "latest_locked_artifact_at": "2026-07-22T03:35:12.644458Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "click",
+      "version": "8.5.0",
+      "latest_locked_artifact_at": "2026-08-26T13:33:14.560531Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "fastapi",
+      "version": "0.141.1",
+      "latest_locked_artifact_at": "2026-07-29T17:18:05.568608Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "greenlet",
+      "version": "3.5.5",
+      "latest_locked_artifact_at": "2026-08-10T15:09:36.136190Z",
+      "artifact_hashes": 79
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "grpcio",
+      "version": "1.83.1",
+      "latest_locked_artifact_at": "2026-08-28T07:09:11.464473Z",
+      "artifact_hashes": 51
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "h11",
+      "version": "0.16.0",
+      "latest_locked_artifact_at": "2025-04-24T03:35:25.427659Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "httpcore",
+      "version": "1.0.9",
+      "latest_locked_artifact_at": "2025-04-24T22:06:22.219726Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "httpx",
+      "version": "0.28.1",
+      "latest_locked_artifact_at": "2024-12-06T15:37:23.222462Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "idna",
+      "version": "3.19",
+      "latest_locked_artifact_at": "2026-08-18T05:14:24.270231Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "latest_locked_artifact_at": "2026-01-07T13:41:07.246891Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "latest_locked_artifact_at": "2025-09-08T01:34:59.186960Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "opentelemetry-proto",
+      "version": "1.44.0",
+      "latest_locked_artifact_at": "2026-07-16T15:25:45.340201Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "protobuf",
+      "version": "7.36.1",
+      "latest_locked_artifact_at": "2026-08-31T22:40:04.667203Z",
+      "artifact_hashes": 8
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "psycopg",
+      "version": "3.3.5",
+      "latest_locked_artifact_at": "2026-08-31T22:45:43.151048Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "psycopg-binary",
+      "version": "3.3.5",
+      "latest_locked_artifact_at": "2026-08-31T22:45:40.537594Z",
+      "artifact_hashes": 55
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pydantic",
+      "version": "2.13.5",
+      "latest_locked_artifact_at": "2026-08-28T14:04:00.916255Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "pydantic-core",
+      "version": "2.46.5",
+      "latest_locked_artifact_at": "2026-08-28T10:01:31.677756Z",
+      "artifact_hashes": 120
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "referencing",
+      "version": "0.37.0",
+      "latest_locked_artifact_at": "2025-10-13T15:30:48.871335Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "rpds-py",
+      "version": "2026.6.3",
+      "latest_locked_artifact_at": "2026-06-30T07:17:53.009498Z",
+      "artifact_hashes": 116
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "sqlalchemy",
+      "version": "2.0.52",
+      "latest_locked_artifact_at": "2026-08-11T21:17:07.267942Z",
+      "artifact_hashes": 52
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "starlette",
+      "version": "1.6.0",
+      "latest_locked_artifact_at": "2026-08-08T18:27:57.512594Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "latest_locked_artifact_at": "2026-07-02T08:40:05.920538Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "latest_locked_artifact_at": "2026-08-12T12:37:25.997329Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "tzdata",
+      "version": "2026.3",
+      "latest_locked_artifact_at": "2026-07-10T08:50:37.887008Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "uvicorn",
+      "version": "0.52.4",
+      "latest_locked_artifact_at": "2026-08-19T06:27:41.821170Z",
+      "artifact_hashes": 2
+    },
+    {
+      "ecosystem": "pypi",
+      "name": "websockets",
+      "version": "15.0.1",
+      "latest_locked_artifact_at": "2025-03-05T20:03:41.606879Z",
+      "artifact_hashes": 69
+    }
+  ]
+}

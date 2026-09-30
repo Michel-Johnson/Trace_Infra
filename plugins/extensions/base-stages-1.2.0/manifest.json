@@ -1,0 +1,50 @@
+{
+  "schema_version": "trace-hunter/plugin/2.0",
+  "plugin_id": "official.base-stages",
+  "version": "1.2.0",
+  "title": "Base 阶段分类",
+  "description": "识别 Plan、Spec、Table、Flow 等生成阶段；保留来源、未知分类与原始调用顺序。",
+  "package_digest": "831c66177922edcc1e484b95ea70af8c80ffc61343bf6dd3520b002ee259163d",
+  "contributes": [
+    {
+      "id": "classify",
+      "title": "Base 阶段分类",
+      "kind": "slicer",
+      "mode": "classify",
+      "implementation": {
+        "host": "server",
+        "ref": "classify.py"
+      },
+      "scopes": [
+        "run"
+      ],
+      "consumes": [
+        "trace-hunter/1.0",
+        "trace-hunter/1.1"
+      ],
+      "config_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "default_config": {},
+      "trigger": "explicit",
+      "output_kind": "facets",
+      "permissions": [
+        "trace.read",
+        "facets.submit"
+      ]
+    }
+  ],
+  "extensions": {
+    "trace_hunter.classification_targets": {
+      "classify": [
+        "tool",
+        "model",
+        "wait",
+        "agent"
+      ]
+    }
+  }
+}

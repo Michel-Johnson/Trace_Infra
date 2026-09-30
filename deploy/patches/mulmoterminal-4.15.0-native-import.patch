@@ -1,0 +1,498 @@
+diff --git a/server/agents/claude-args.ts b/server/agents/claude-args.ts
+index 7204517d..82e1d230 100644
+--- a/server/agents/claude-args.ts
++++ b/server/agents/claude-args.ts
+@@ -49,6 +49,7 @@ export interface ClaudeArgsInput {
+   // to answer for it, and `null` is how it says no. `undefined` is in the type but the KEY is
+   // still mandatory — a value that was never resolved can arrive, but a caller cannot omit it.
+   appendedPrompt: AppendedPromptArgument | null | undefined;
++  recorderPluginDir?: string;
+ }
+ 
+ export function buildClaudeArgs(input: ClaudeArgsInput): string[] {
+@@ -79,6 +80,7 @@ export function buildClaudeArgs(input: ClaudeArgsInput): string[] {
+   // auto-allowed, and those reach it through the user's own MCP config. Empty means nothing to
+   // pre-approve.
+   if (input.allowedTools) guiArgs.push("--allowedTools", input.allowedTools);
++  if (input.recorderPluginDir) guiArgs.push("--plugin-dir", input.recorderPluginDir);
+   // LAST, and one flag for the whole list: `--add-dir` is variadic (`<directories...>`), so a
+   // flag placed after it would be fine but a VALUE would be swallowed. Keeping it at the end
+   // means nothing can ever follow it.
+diff --git a/server/routes/app-routes.ts b/server/routes/app-routes.ts
+index 679704d7..c51be701 100644
+--- a/server/routes/app-routes.ts
++++ b/server/routes/app-routes.ts
+@@ -30,6 +30,7 @@ import { mountIssueWorkRoutes } from "../routes/issue-work-routes.js";
+ import { mountDirRoutes } from "../routes/dir-routes.js";
+ import { mountGuiMcpRoutes } from "../routes/gui-mcp-routes.js";
+ import { mountDropRoutes } from "../routes/drop-routes.js";
++import { mountTraceHunterImportRoutes } from "../routes/trace-hunter-import-routes.js";
+ import { mountOpenDirRoute } from "../files/open-dir.js";
+ import { mountGitRemoteRoute } from "../git/gitRemote.js";
+ import { mountWorktreeRoutes } from "../git/worktree-routes.js";
+@@ -146,6 +147,7 @@ export function mountAppRoutes(app: Express, deps: AppRouteDeps): void {
+   // Ahead of express.json, carrying its own raw parser: a dropped file is bytes under its own
+   // content type, and a dropped .json would otherwise be parsed as a document rather than saved.
+   mountDropRoutes(app);
++  mountTraceHunterImportRoutes(app, deps.spawnClaudePty, deps.reap);
+ 
+   app.use(express.json({ limit: "25mb" }));
+ 
+diff --git a/server/routes/trace-hunter-import-routes.ts b/server/routes/trace-hunter-import-routes.ts
+new file mode 100644
+index 00000000..80c55289
+--- /dev/null
++++ b/server/routes/trace-hunter-import-routes.ts
+@@ -0,0 +1,232 @@
++// Private worker-to-terminal bridge. This starts the SAME Claude PTY that the browser attaches to;
++// it never renders stream-json as terminal output or accepts browser-authored job metadata.
++import { createHash, timingSafeEqual } from "node:crypto";
++import express, { type Express, type Request } from "express";
++import fs from "node:fs";
++import path from "node:path";
++import { CLAUDE_CWD, SESSION_ID_RE } from "../config/env.js";
++import { projectSessionsDir } from "../session/project-dir.js";
++import { ptys } from "../session/registry.js";
++import { tmuxHasSession } from "../infra/tmux.js";
++import type { createClaudeSpawner } from "../session/spawn-claude.js";
++
++const root = path.join(CLAUDE_CWD, ".trace-hunter-imports");
++const base = "/api/internal/trace-hunter/imports";
++const maxUpload = 268_435_456;
++const hashOf = (bytes: Buffer | string): string => createHash("sha256").update(bytes).digest("hex");
++const dirOf = (id: string): string => path.join(root, id);
++
++function privateRequest(req: Request): boolean {
++  const expected = process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN;
++  const supplied = req.get("X-Trace-Hunter-Import-Token") || "";
++  if (!expected || expected.length < 32 || expected.length !== supplied.length) return false;
++  const address = req.socket.remoteAddress;
++  return (address === "127.0.0.1" || address === "::1" || address === "::ffff:127.0.0.1") &&
++    timingSafeEqual(Buffer.from(expected), Buffer.from(supplied));
++}
++
++function filename(raw: string): string {
++  const name = path.basename(raw).replace(/[\r\n\0]/g, "").slice(0, 180);
++  return name && name !== "." && name !== ".." ? name : "trace.json";
++}
++
++function prepareJob(id: string): string {
++  const dir = dirOf(id);
++  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
++  for (const relative of ["CLAUDE.md", ".mulmoterminal.json", ".claude/skills", "scripts", "contracts/schemas"]) {
++    const source = path.join(CLAUDE_CWD, relative);
++    const target = path.join(dir, relative);
++    if (fs.existsSync(source) && !fs.existsSync(target)) {
++      fs.mkdirSync(path.dirname(target), { recursive: true, mode: 0o700 });
++      fs.cpSync(source, target, { recursive: true, force: false });
++    }
++  }
++  return dir;
++}
++
++function stopped(dir: string): boolean {
++  const file = path.join(dir, "hook.jsonl");
++  if (!fs.existsSync(file)) return false;
++  // Inspect only a bounded tail; an interactive session can accumulate many subsequent turns.
++  const size = fs.statSync(file).size;
++  const length = Math.min(size, 16 * 1024 * 1024);
++  const bytes = Buffer.alloc(length);
++  const handle = fs.openSync(file, "r");
++  try { fs.readSync(handle, bytes, 0, length, size - length); }
++  finally { fs.closeSync(handle); }
++  return bytes.toString("utf8").split("\n").some(line => {
++    if (!line) return false;
++    try { return ["Stop", "StopFailure"].includes(JSON.parse(line)?.value?.hook_event_name); }
++    catch { return false; }
++  });
++}
++
++function sessionEvidence(id: string, dir: string): { live: boolean; transcript: boolean } {
++  return {
++    live: ptys.has(id) || tmuxHasSession(id),
++    transcript: fs.existsSync(path.join(projectSessionsDir(dir), `${id}.jsonl`)),
++  };
++}
++
++type SpawnClaudePty = ReturnType<typeof createClaudeSpawner>["spawnClaudePty"];
++
++export function mountTraceHunterImportRoutes(app: Express, spawnClaudePty: SpawnClaudePty, reap: (id: string) => void): void {
++  const idOf = (req: Request): string => typeof req.params.id === "string" ? req.params.id : "";
++  const authorized = (req: Request): boolean => privateRequest(req) && SESSION_ID_RE.test(idOf(req));
++  app.put(`${base}/:id/attachments/:attachmentId`, express.raw({ type: () => true, limit: maxUpload }), (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const attachment = String(req.params.attachmentId);
++    if (!SESSION_ID_RE.test(attachment)) return res.sendStatus(400);
++    const bytes: unknown = req.body;
++    const expected = req.get("X-Content-SHA256") || "";
++    if (!Buffer.isBuffer(bytes) || !/^[0-9a-f]{64}$/.test(expected) || hashOf(bytes) !== expected) return res.sendStatus(422);
++    const dir = dirOf(idOf(req));
++    if (fs.existsSync(path.join(dir, "job.json"))) return res.sendStatus(409);
++    const folder = path.join(prepareJob(idOf(req)), "attachments");
++    fs.mkdirSync(folder, { recursive: true, mode: 0o700 });
++    let suppliedName = "trace.json";
++    try { suppliedName = decodeURIComponent(req.get("X-Trace-Name") || suppliedName); }
++    catch { return res.sendStatus(400); }
++    const name = filename(suppliedName);
++    const target = path.join(folder, `${attachment}-${name}`);
++    if (fs.existsSync(target) && hashOf(fs.readFileSync(target)) !== expected) return res.sendStatus(409);
++    if (!fs.existsSync(target)) fs.writeFileSync(target, bytes, { mode: 0o600 });
++    return res.json({ path: target, sha256: expected });
++  });
++
++  app.post(`${base}/:id/start`, express.json({ limit: "1mb" }), (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const body: unknown = req.body;
++    if (!body || typeof body !== "object") return res.sendStatus(400);
++    const job = body as Record<string, unknown>;
++    const { turnId, taskId, project, prompt, telemetryToken, sourceSha256 } = job;
++    const kind = job.kind === "agent" ? "agent" : "import";
++    if (typeof turnId !== "string" || !SESSION_ID_RE.test(turnId) ||
++        (kind === "import" && (typeof taskId !== "string" || !/^task-[0-9a-f]{24}$/.test(taskId))) ||
++        (kind === "agent" && taskId !== undefined && (typeof taskId !== "string" || !/^task-[0-9a-f]{24}$/.test(taskId))) ||
++        typeof project !== "string" || !/^[A-Za-z0-9._-]{1,128}$/.test(project) ||
++        typeof prompt !== "string" || !prompt || prompt.length > 200_000 ||
++        typeof telemetryToken !== "string" || telemetryToken.length < 32 || telemetryToken.length > 128 ||
++        (kind === "import" && (typeof sourceSha256 !== "string" || !/^[0-9a-f]{64}$/.test(sourceSha256))) ||
++        (kind === "agent" && sourceSha256 !== undefined)) return res.sendStatus(400);
++    const pluginDir = process.env.TRACE_HUNTER_IMPORT_PLUGIN_DIR;
++    if (!pluginDir || !fs.existsSync(path.join(pluginDir, ".claude-plugin", "plugin.json"))) return res.status(503).json({ error: "Recorder plugin unavailable" });
++    const dir = prepareJob(idOf(req));
++    const attachmentDir = path.join(dir, "attachments");
++    if (kind === "import" && (!fs.existsSync(attachmentDir) || !fs.readdirSync(attachmentDir).some(name =>
++      hashOf(fs.readFileSync(path.join(attachmentDir, name))) === sourceSha256))) return res.status(409).json({ error: "Verified attachment missing" });
++    const manifest = path.join(dir, "job.json");
++    const digest = hashOf(JSON.stringify(kind === "import"
++      ? { turnId, taskId, project, prompt, sourceSha256 }
++      : { turnId, taskId, project, prompt, kind }));
++    if (fs.existsSync(manifest)) {
++      const saved = JSON.parse(fs.readFileSync(manifest, "utf8")) as { digest?: string };
++      if (saved.digest !== digest) return res.sendStatus(409);
++      const evidence = sessionEvidence(idOf(req), dir);
++      // A crash after reserving job.json but before spawning must not be reported as a
++      // running terminal. Never launch a second process for an ambiguous existing job.
++      if (!evidence.live && !evidence.transcript && !fs.existsSync(path.join(dir, "import-result.json")))
++        return res.status(503).json({ error: "Import terminal has no process or transcript" });
++      return res.json({ sessionId: idOf(req), cwd: dir, reused: true });
++    }
++    const api = process.env.TRACE_HUNTER_IMPORT_API_URL || "http://127.0.0.1:8767";
++    const endpoint = `${api}/api/v1/agent/worker/turns/${turnId}/otel`;
++    const env = {
++      TRACE_HUNTER_PROJECT: project, TRACE_HUNTER_PROFILE: "terminal",
++      TRACE_HUNTER_AGENT_SESSION_ID: idOf(req),
++      TRACE_HUNTER_AGENT_HOOK_PATH: path.join(dir, "hook.jsonl"),
++      CLAUDE_CODE_ENABLE_TELEMETRY: "1", CLAUDE_CODE_ENHANCED_TELEMETRY_BETA: "1",
++      OTEL_LOGS_EXPORTER: "otlp", OTEL_TRACES_EXPORTER: "otlp", OTEL_METRICS_EXPORTER: "none",
++      OTEL_EXPORTER_OTLP_PROTOCOL: "http/json",
++      OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: `${endpoint}/v1/logs`,
++      OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: `${endpoint}/v1/traces`,
++      OTEL_EXPORTER_OTLP_HEADERS: `X-Trace-Hunter-Recorder-Token=${telemetryToken}`,
++      OTEL_LOG_RAW_API_BODIES: `file:${path.join(dir, "body")}`,
++    };
++    fs.mkdirSync(path.join(dir, "body"), { mode: 0o700 });
++    fs.writeFileSync(manifest, JSON.stringify({ digest, turnId, taskId, project, sourceSha256, kind }), { flag: "wx", mode: 0o600 });
++    try {
++      spawnClaudePty(idOf(req), null, null, { cwd: dir,
++        initialPrompt: fs.existsSync(attachmentDir) && fs.readdirSync(attachmentDir).length
++          ? `${prompt}\n\n本次会话已附加原始文件，存放于：${attachmentDir}` : prompt,
++        traceHunterRecorder: { pluginDir, env } });
++    } catch (error) {
++      fs.rmSync(manifest);
++      return res.status(503).json({ error: String(error) });
++    }
++    return res.status(201).json({ sessionId: idOf(req), cwd: dir, reused: false });
++  });
++
++  app.get(`${base}/:id/status`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const dir = dirOf(idOf(req));
++    if (!fs.existsSync(path.join(dir, "job.json"))) return res.sendStatus(404);
++    const evidence = sessionEvidence(idOf(req), dir);
++    return res.json({ sessionId: idOf(req), cwd: dir, live: evidence.live, stopped: stopped(dir),
++      receipt: fs.existsSync(path.join(dir, "import-result.json")),
++      transcript: evidence.transcript });
++  });
++
++  app.get(`${base}/:id/files/:file`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const dir = dirOf(idOf(req));
++    const names: Record<string, string> = {
++      transcript: path.join(projectSessionsDir(dir), `${idOf(req)}.jsonl`),
++      hooks: path.join(dir, "hook.jsonl"), receipt: path.join(dir, "import-result.json"),
++      "body-index": path.join(dir, "body", "index.jsonl"),
++    };
++    const file = names[String(req.params.file)];
++    if (!file || !fs.existsSync(file) || fs.lstatSync(file).isSymbolicLink()) return res.sendStatus(404);
++    return res.type("application/octet-stream").sendFile(file, { dotfiles: "allow" });
++  });
++
++  app.get(`${base}/:id/body`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const dir = dirOf(idOf(req));
++    if (!fs.existsSync(path.join(dir, "job.json"))) return res.sendStatus(404);
++    const body = path.join(dir, "body");
++    const names = fs.existsSync(body) ? fs.readdirSync(body).filter(name =>
++      /^[A-Za-z0-9._-]{1,255}\.(request|response)\.json$/.test(name) &&
++      !fs.lstatSync(path.join(body, name)).isSymbolicLink() && fs.statSync(path.join(body, name)).isFile()) : [];
++    return res.json({ names });
++  });
++
++  app.get(`${base}/:id/body/:name`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const name = String(req.params.name);
++    if (!/^[A-Za-z0-9._-]{1,255}\.(request|response)\.json$/.test(name)) return res.sendStatus(400);
++    const file = path.join(dirOf(idOf(req)), "body", name);
++    if (!fs.existsSync(file) || fs.lstatSync(file).isSymbolicLink() || !fs.statSync(file).isFile()) return res.sendStatus(404);
++    return res.type("application/octet-stream").sendFile(file, { dotfiles: "allow" });
++  });
++
++  app.get(`${base}/:id/script/:name`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const name = String(req.params.name);
++    if (!/^[A-Za-z0-9._-]{1,255}\.py$/.test(name)) return res.sendStatus(400);
++    const file = path.join(dirOf(idOf(req)), name);
++    if (!fs.existsSync(file) || fs.lstatSync(file).isSymbolicLink() || !fs.statSync(file).isFile() || fs.statSync(file).size > 262_144) return res.sendStatus(404);
++    return res.type("text/x-python").sendFile(file, { dotfiles: "allow" });
++  });
++
++  app.get(`${base}/:id/subagent/:name`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    const name = String(req.params.name);
++    if (!/^agent-[A-Za-z0-9_-]{1,128}\.jsonl$/.test(name)) return res.sendStatus(400);
++    const project = projectSessionsDir(dirOf(idOf(req)));
++    const candidates = [path.join(project, idOf(req), "subagents", name),
++                        path.join(project, "subagents", name)];
++    const file = candidates.find(candidate => fs.existsSync(candidate) &&
++      !fs.lstatSync(candidate).isSymbolicLink() && fs.statSync(candidate).isFile() &&
++      fs.statSync(candidate).size <= 16 * 1024 * 1024);
++    if (!file) return res.sendStatus(404);
++    return res.type("application/octet-stream").sendFile(file, { dotfiles: "allow" });
++  });
++
++  app.post(`${base}/:id/cancel`, (req, res) => {
++    if (!authorized(req)) return res.sendStatus(403);
++    if (!fs.existsSync(path.join(dirOf(idOf(req)), "job.json"))) return res.sendStatus(404);
++    reap(idOf(req));
++    return res.json({ cancelled: true });
++  });
++}
+diff --git a/server/session/pty-spawn.ts b/server/session/pty-spawn.ts
+index 66732751..ea1f2056 100644
+--- a/server/session/pty-spawn.ts
++++ b/server/session/pty-spawn.ts
+@@ -36,7 +36,9 @@ export const TMUX_CLIENT_CWD = os.homedir();
+ // inside `withoutUnset`, so a caller asking for LANG to be gone still gets it gone.
+ export function ptyEnv(unset: readonly string[] = [], extra: Readonly<Record<string, string>> = {}): NodeJS.ProcessEnv {
+   const inherited = withFallbackLocale(sanitizePtyEnv(process.env, path.delimiter), process.platform);
+-  return { ...withoutUnset(inherited, unset), ...extra };
++  // A host-only credential for the private import bridge must never be inherited by any shell
++  // or Agent launched from the terminal service, including non-Claude launchers.
++  return { ...withoutUnset(inherited, [...unset, "TRACE_HUNTER_IMPORT_BRIDGE_TOKEN"]), ...extra };
+ }
+ 
+ /** What a terminal opened in `cwd` is given on top of the inherited environment: the per-tree
+diff --git a/server/session/spawn-claude.ts b/server/session/spawn-claude.ts
+index b17aae06..935860c6 100644
+--- a/server/session/spawn-claude.ts
++++ b/server/session/spawn-claude.ts
+@@ -63,6 +63,8 @@ export interface SpawnClaudeOptions {
+    *  so an edited command reaches the next session without a restart and the browser can never
+    *  name a program that is not in the config. Absent = plain claude. */
+   customAgentId?: string | undefined;
++  /** Server-verified import job only; never populated from a browser WebSocket. */
++  traceHunterRecorder?: { pluginDir: string; env: Readonly<Record<string, string>> };
+ }
+ 
+ // The `work in <clone>` line for a session's PRs, or null when the footer is switched off or the
+@@ -204,7 +206,7 @@ export function createClaudeSpawner(deps: SpawnDeps) {
+   // a viewer yet (e.g. spawnBackgroundChat) — output just buffers until a client
+   // reattaches.
+   function spawnClaudePty(sessionId: string, resume: string | null, ws: WebSocket | null, options: SpawnClaudeOptions = {}): PtyEntry {
+-    const { initialPrompt, cwd = CLAUDE_CWD, attachGuiMcp = true, draft, launch, customAgentId } = options;
++    const { initialPrompt, cwd = CLAUDE_CWD, attachGuiMcp = true, draft, launch, customAgentId, traceHunterRecorder } = options;
+     const fullGuiMcp = carriesFullGuiMcp(attachGuiMcp, cwd, "claude");
+     // fullGuiMcp picks the MCP mode (see buildClaudeArgs, and its own doc for who earns it): our
+     // broker on one all-tools url; a project-directory cell gets none of ours and loads the GUI
+@@ -242,6 +244,7 @@ export function createClaudeSpawner(deps: SpawnDeps) {
+       allowedTools: fullGuiMcp ? fullGuiAllowedTools(deps.guiMcpTools, getUserMcpServers()) : deps.gridMcpTools,
+       addDirs,
+       appendedPrompt: sessionAppendedPrompt(sessionId, cwd, dir.appendSystemPrompt),
++      ...(traceHunterRecorder ? { recorderPluginDir: traceHunterRecorder.pluginDir } : {}),
+     });
+ 
+     console.log(`[ws] client connected (${canResume ? "resume" : "new"} ${sessionId})`);
+@@ -283,8 +286,13 @@ export function createClaudeSpawner(deps: SpawnDeps) {
+ 
+     function spawnEntry(): PtyEntry {
+       recordCapabilitiesForThisSpawn();
+-      const program = sessionProgram(deps.claudeBin, sessionId, customAgentId, canResume ? resume : null, resolved.unset);
+-      const { term, tmux, reattached } = ptySpawn(sessionId, program.file, [...program.prefixArgs, ...args], cwd, true, program.spawnEnv);
++      // The local bridge credential belongs only to the Mulmo host, never to an Agent PTY.
++      const program = sessionProgram(deps.claudeBin, sessionId, customAgentId, canResume ? resume : null,
++        [...resolved.unset, "TRACE_HUNTER_IMPORT_BRIDGE_TOKEN"]);
++      const spawnEnv = traceHunterRecorder
++        ? { ...program.spawnEnv, env: { ...program.spawnEnv.env, ...traceHunterRecorder.env } }
++        : program.spawnEnv;
++      const { term, tmux, reattached } = ptySpawn(sessionId, program.file, [...program.prefixArgs, ...args], cwd, true, spawnEnv);
+       console.log(ptyStartLine({ agent: "claude", pid: term.pid, cwd, tmux, reattached, sessionId, note: program.note }));
+       return { term, ws, buffer: "", cwd, tmux, active: false, agent: "claude" }; // "claude" whatever wrapper started it — see sessionProgram
+     }
+diff --git a/src/components/GridView.vue b/src/components/GridView.vue
+index 520a2fd0..84722c3f 100644
+--- a/src/components/GridView.vue
++++ b/src/components/GridView.vue
+@@ -112,5 +112,10 @@ onBeforeUnmount(() => window.removeEventListener("message", onTraceHunterZoom));
+-const embeddedCwd = "/var/lib/trace-hunter-terminal/workspace";
++const defaultEmbeddedCwd = "/var/lib/trace-hunter-terminal/workspace";
+ const resumeId = new URLSearchParams(window.location.search).get("resume");
+ const validResume = resumeId && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(resumeId) ? resumeId : null;
++const requestedCwd = new URLSearchParams(window.location.search).get("cwd");
++// Only the server-authored private workspace may override the embedded cwd. Arbitrary browser
++// paths must not make the privileged terminal start in a different directory.
++const embeddedCwd = validResume && requestedCwd === `${defaultEmbeddedCwd}/.trace-hunter-imports/${validResume}`
++  ? requestedCwd : defaultEmbeddedCwd;
+ const embeddedState: GridState = {
+   cells: [{ uid: 0, session: validResume, cwd: embeddedCwd, ...(validResume ? {} : { autoStart: true }) }],
+diff --git a/test/server/agents/claude-args.spec.ts b/test/server/agents/claude-args.spec.ts
+index 67c3087c..992ecefd 100644
+--- a/test/server/agents/claude-args.spec.ts
++++ b/test/server/agents/claude-args.spec.ts
+@@ -20,6 +20,10 @@ const base: ClaudeArgsInput = {
+ const cfg = (over: Partial<ClaudeArgsInput> = {}): ClaudeArgsInput => ({ ...base, ...over });
+ 
+ describe("buildClaudeArgs", () => {
++  it("loads the Recorder plugin only for an explicitly configured native import", () => {
++    expect(buildClaudeArgs(cfg({ recorderPluginDir: "/opt/recorder" }))).toContain("/opt/recorder");
++    expect(buildClaudeArgs(base)).not.toContain("--plugin-dir");
++  });
+   it("single view (attachGuiMcp): attaches GUI MCP + --allowedTools, and nothing that isolates", () => {
+     const args = buildClaudeArgs(base);
+     expect(args).toEqual([
+diff --git a/test/server/routes/trace-hunter-import-routes.spec.ts b/test/server/routes/trace-hunter-import-routes.spec.ts
+new file mode 100644
+index 00000000..991d0e96
+--- /dev/null
++++ b/test/server/routes/trace-hunter-import-routes.spec.ts
+@@ -0,0 +1,100 @@
++// @vitest-environment node
++import { afterAll, describe, expect, it, vi } from "vitest";
++import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
++import { randomUUID, createHash } from "node:crypto";
++import path from "node:path";
++import os from "node:os";
++import express from "express";
++import { routeCall, jsonPost } from "../../helpers/routeCall";
++
++const workspace = mkdtempSync(path.join(os.tmpdir(), "trace-hunter-native-import-"));
++const plugin = path.join(workspace, "plugin");
++mkdirSync(path.join(plugin, ".claude-plugin"), { recursive: true });
++writeFileSync(path.join(plugin, ".claude-plugin", "plugin.json"), "{}");
++process.env.CLAUDE_CWD = workspace;
++process.env.TRACE_HUNTER_IMPORT_PLUGIN_DIR = plugin;
++process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN = "synthetic-native-bridge-token-0123456789";
++const { mountTraceHunterImportRoutes } = await import("../../../server/routes/trace-hunter-import-routes.js");
++const { ptys } = await import("../../../server/session/registry.js");
++const app = express();
++const spawned = vi.fn((id: string, _resume: string | null, _ws: unknown,
++  _options: { initialPrompt?: string; traceHunterRecorder?: { pluginDir: string; env: Record<string, string> } }) => {
++  ptys.set(id, {} as never);
++});
++mountTraceHunterImportRoutes(app, spawned as never, vi.fn());
++const call = routeCall(app);
++const session = randomUUID();
++const agentSession = randomUUID();
++const attachment = randomUUID();
++const turn = randomUUID();
++const task = "task-" + createHash("sha256").update("synthetic-task").digest("hex").slice(0, 24);
++const token = process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN;
++const headers = { "x-trace-hunter-import-token": token };
++const bytes = Buffer.from("{\"synthetic\":true}");
++const digest = createHash("sha256").update(bytes).digest("hex");
++const base = `/api/internal/trace-hunter/imports/${session}`;
++
++afterAll(() => { ptys.delete(session); ptys.delete(agentSession); rmSync(workspace, { recursive: true, force: true }); });
++
++describe("native import bridge", () => {
++  it("requires a private token before staging any uploaded bytes", async () => {
++    const denied = await call(base + `/attachments/${attachment}`, { method: "PUT", body: bytes,
++      headers: { "content-type": "application/octet-stream", "x-content-sha256": digest } });
++    expect(denied.status).toBe(403);
++  });
++
++  it("stages the verified source and starts one real Claude PTY idempotently", async () => {
++    const upload = await call(base + `/attachments/${attachment}`, { method: "PUT", body: bytes,
++      headers: { ...headers, "content-type": "application/octet-stream", "x-content-sha256": digest,
++        "x-trace-name": encodeURIComponent("synthetic.json") } });
++    expect(upload.status).toBe(200);
++    expect(upload.body.sha256).toBe(digest);
++    const job = { turnId: turn, taskId: task, project: "synthetic", prompt: "Import this trace",
++      telemetryToken: "synthetic-otel-token-0123456789012345", sourceSha256: digest };
++    const started = await call(base + "/start", jsonPost(job, headers));
++    expect(started.status).toBe(201);
++    expect(spawned).toHaveBeenCalledOnce();
++    expect(spawned.mock.calls[0]?.[0]).toBe(session);
++    expect(spawned.mock.calls[0]?.[3]?.initialPrompt).toContain(job.prompt);
++    expect(spawned.mock.calls[0]?.[3]?.initialPrompt).toContain("/attachments");
++    expect(spawned.mock.calls[0]?.[3]?.traceHunterRecorder?.pluginDir).toBe(plugin);
++    const replay = await call(base + "/start", jsonPost(job, headers));
++    expect(replay.status).toBe(200);
++    expect(replay.body.reused).toBe(true);
++    expect(spawned).toHaveBeenCalledOnce();
++    const status = await call(base + "/status", { headers });
++    expect(status.body.live).toBe(true);
++    const bodyDir = path.join(workspace, ".trace-hunter-imports", session, "body");
++    writeFileSync(path.join(bodyDir, "synthetic.request.json"), bytes);
++    const original = await call(base + "/body/synthetic.request.json", { headers });
++    expect(original.status).toBe(200);
++    expect(original.text).toBe(bytes.toString());
++    const conflict = await call(base + "/start", jsonPost({ ...job, prompt: "different" }, headers));
++    expect(conflict.status).toBe(409);
++  });
++
++  it("does not claim a reserved but never spawned job is running", async () => {
++    ptys.delete(session);
++    const failed = await call(base + "/start", jsonPost({ turnId: turn, taskId: task,
++      project: "synthetic", prompt: "Import this trace", telemetryToken: "synthetic-otel-token-0123456789012345",
++      sourceSha256: digest }, headers));
++    expect(failed.status).toBe(503);
++    expect(spawned).toHaveBeenCalledOnce();
++  });
++
++  it("starts an ordinary Agent in the same Claude PTY without a fake import attachment", async () => {
++    const url = `/api/internal/trace-hunter/imports/${agentSession}`;
++    const job = { kind: "agent", turnId: randomUUID(), project: "synthetic",
++      prompt: "Evaluate the synthetic case", telemetryToken: "synthetic-otel-token-0123456789012345" };
++    const started = await call(url + "/start", jsonPost(job, headers));
++    expect(started.status).toBe(201);
++    const callOptions = spawned.mock.calls.at(-1)?.[3];
++    expect(spawned.mock.calls.at(-1)?.[0]).toBe(agentSession);
++    expect(callOptions?.initialPrompt).toBe(job.prompt);
++    expect(callOptions?.traceHunterRecorder?.pluginDir).toBe(plugin);
++    expect(callOptions?.traceHunterRecorder?.env?.TRACE_HUNTER_AGENT_SESSION_ID).toBe(agentSession);
++    const replay = await call(url + "/start", jsonPost(job, headers));
++    expect(replay.status).toBe(200);
++    expect(replay.body.reused).toBe(true);
++  });
++});
+diff --git a/test/server/session/pty-spawn-env.spec.ts b/test/server/session/pty-spawn-env.spec.ts
+index 54cdd9e0..0cc7051c 100644
+--- a/test/server/session/pty-spawn-env.spec.ts
++++ b/test/server/session/pty-spawn-env.spec.ts
+@@ -67,6 +67,17 @@ beforeEach(() => {
+ // one. So the removal has to happen HERE — computing it and not applying it (which is
+ // exactly what shipped first) leaves the routing broken with no symptom until a request.
+ describe("spawnPty — the environment it hands the pty", () => {
++  it("never leaks the private import bridge token into an interactive terminal", () => {
++    const prior = process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN;
++    process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN = "synthetic-secret";
++    try {
++      spawnPty("claude", [], EXISTING_CWD);
++      expect(envOf()).not.toHaveProperty("TRACE_HUNTER_IMPORT_BRIDGE_TOKEN");
++    } finally {
++      if (prior === undefined) delete process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN;
++      else process.env.TRACE_HUNTER_IMPORT_BRIDGE_TOKEN = prior;
++    }
++  });
+   it("removes the named variables", () => {
+     spawnPty("claude", [], EXISTING_CWD, ["ANTHROPIC_API_KEY"]);
+     expect(envOf()).not.toHaveProperty("ANTHROPIC_API_KEY");

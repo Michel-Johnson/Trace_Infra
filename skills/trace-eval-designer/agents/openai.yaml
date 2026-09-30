@@ -1,0 +1,4 @@
+interface:
+  display_name: "Trace Eval Designer"
+  short_description: "澄清 Trace 评测目标并设计可执行 Eval Spec"
+  default_prompt: "使用 $trace-eval-designer 与我澄清评测目标，并输出可评审的 Trace Eval Spec 和 Infra 查询计划。"

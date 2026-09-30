@@ -1,0 +1,21 @@
+[Unit]
+Description=Trace Hunter official evaluation worker
+After=trace-hunter-db.service
+Requires=trace-hunter-db.service
+
+[Service]
+WorkingDirectory=%h/apps/trace-hunter-next
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=%h/apps/trace-hunter-data/database.env
+EnvironmentFile=%h/apps/trace-hunter-data/api.env
+ExecStart=%h/apps/trace-hunter-next/.venv/bin/python scripts/evaluation_worker.py
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=70
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

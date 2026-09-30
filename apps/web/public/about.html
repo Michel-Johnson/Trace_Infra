@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Trace Hunter 统一接入 Agent Trace，在海量 Span 中检索证据，并用内置 Skill 完成可追溯分析。">
+  <meta name="theme-color" content="#151513">
+  <title>Trace Hunter · 平台介绍</title>
+  <link rel="canonical" href="/about.html">
+  <script src="/platform-intro-motion.js"></script>
+  <link rel="stylesheet" href="/platform-intro.css">
+</head>
+<body>
+  <a class="skip" href="#capabilities">跳到核心能力</a>
+  <header class="nav-shell">
+    <div class="nav-inner">
+      <a class="identity" href="#top" aria-label="Trace Hunter 首页"><span class="brand-grid" aria-hidden="true">▦</span><span class="brand-wordmark">Trace Hunter</span></a>
+      <nav aria-label="页面导航"><a href="#capabilities">核心能力</a></nav>
+      <a class="nav-cta" href="/#/">进入工作台<img src="/guide-icons/arrow.svg" width="15" height="15" alt=""></a>
+    </div>
+  </header>
+  <!-- Primary navigation flows directly into the hero. -->
+  <main id="top">
+    <section id="scenarios" class="hero" aria-labelledby="hero-title">
+      <div class="hero-content">
+        <h1 id="hero-title"><span class="hero-title-line"><span data-reveal-word>让</span> <span data-reveal-word>Agent</span> <span data-reveal-word>Trace</span></span><strong class="hero-title-line"><span data-reveal-word>成为可复用的证据</span></strong></h1>
+        <div class="hero-stagger-layout">
+          <div class="hero-visual" aria-hidden="true">
+            <svg viewBox="0 0 620 520" role="presentation">
+              <path class="trace-path trace-path-one" d="M84 88 C168 18 214 166 286 108 S408 38 534 92"/>
+              <path class="trace-path trace-path-two" d="M86 316 C166 240 202 384 296 318 S422 250 540 318"/>
+              <path class="trace-branch" d="M286 108 C312 174 282 222 296 318"/>
+              <rect class="trace-card trace-card-one" x="70" y="58" width="118" height="76" rx="10"/>
+              <rect class="trace-card trace-card-two" x="246" y="278" width="112" height="78" rx="10"/>
+              <rect class="trace-card trace-card-three" x="458" y="56" width="106" height="76" rx="10"/>
+              <circle class="trace-node node-one" cx="188" cy="88" r="13"/>
+              <circle class="trace-node node-two" cx="296" cy="318" r="13"/>
+              <circle class="trace-node node-three" cx="458" cy="92" r="13"/>
+              <path class="trace-glyph" d="M104 84h48M104 104h30M274 306h56M274 326h38M484 83h52M484 103h34"/>
+              <path class="trace-arrow" d="M531 305l18 13-18 13"/>
+            </svg>
+          </div>
+          <div class="hero-message"><p class="hero-summary">统一接入 Agent Trace，在海量 Span 中检索证据，并用内置 Skill 完成可追溯分析。</p><div class="hero-actions"><a class="button button-dark" href="/#/">进入工作台<img src="/guide-icons/arrow.svg" width="15" height="15" alt=""></a><a class="text-link" href="#capabilities">了解核心能力<img src="/guide-icons/down.svg" width="15" height="15" alt=""></a></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="capabilities" class="capabilities" aria-labelledby="capability-title">
+      <div class="content-width">
+        <header class="section-intro" data-section-reveal>
+          <svg class="section-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M11 17h15v13H11zM38 11h15v13H38zM24 40h16v13H24zM26 23l12-5M19 30l10 10M45 24l-8 16"/></svg>
+          <h2 id="capability-title">从完整 Trace，<br>走到可信结论</h2>
+          <p>先保留执行事实，再检索证据，最后运行可复查的分析。</p>
+        </header>
+        <div class="capability-stage" data-section-reveal>
+          <aside class="source-card"><strong>原始 Trace</strong><div class="source-card-visual" aria-hidden="true"><span></span><span></span><span></span></div><p>来源与对象关系保持不可变</p></aside>
+          <div class="capability-rows">
+            <article><span class="capability-icon" aria-hidden="true">↳</span><h3>统一接入 Agent Trace</h3><p>导入不同 Agent 与 Harness 的完整执行轨迹，保留来源、对象关系和调用上下文。</p></article>
+            <article><span class="capability-icon" aria-hidden="true">⌕</span><h3>在海量 Span 中检索证据</h3><p>使用 literal、regex 与 fuzzy 定位 Skill、Tool、错误和正文片段，并固定查询范围。</p></article>
+            <article><span class="capability-icon" aria-hidden="true">✓</span><h3>用内置 Skill 完成分析</h3><p>围绕选定 Trace 执行评测、深挖与报告生成，让方法版本和结论保持可追溯。</p></article>
+          </div>
+          <aside class="metric-card"><strong>3</strong><span>种查询模式</span><p>literal · regex · fuzzy</p></aside>
+        </div>
+      </div>
+    </section>
+
+    <section class="analysis-platform" aria-labelledby="platform-title">
+      <div class="content-width">
+        <header class="section-intro compact" data-section-reveal>
+          <svg class="section-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M9 15h46v34H9zM9 24h46M20 36l-5 5 5 5M44 36l5 5-5 5M28 41h8"/></svg>
+          <h2 id="platform-title">用 Trace Hunter<br>运行完整分析链路</h2>
+          <p>采集、检索、固定范围、运行 Skill，并保存能够回到原始 Span 的结果。</p>
+        </header>
+        <div class="pipeline-stage" data-section-reveal data-parallax-stage>
+          <div class="pipeline-grid" aria-hidden="true"></div>
+          <div class="pipeline-input-stack">
+            <article class="pipeline-card pipeline-source"><span>原始 Span</span><strong>tool · database.query</strong><p>status: error<br>duration: 42 ms<br>content: permission denied</p></article>
+            <article class="pipeline-card pipeline-query"><span>检索目标</span><p>定位所有权限错误，并保留关联 Tool 与上下文。</p></article>
+          </div>
+          <article class="pipeline-card pipeline-result"><span>Analysis Result</span><strong>权限错误集中在数据库调用</strong><div class="result-lines"><p><b>范围</b> 128 条 Span</p><p><b>方法</b> trace-deep-dive</p><p><b>证据</b> 18 个原始引用</p><p><b>限制</b> 未判断业务任务是否失败</p></div></article>
+        </div>
+        <div class="workflow-summary" data-section-reveal><h3>把一次搜索变成可复用的分析资产</h3><ul><li>同一批 Trace 可切换 literal、regex 与 fuzzy</li><li>查询结果先固定，再交给 Skill 分析</li><li>报告保留数据范围、方法版本与原始引用</li></ul></div>
+      </div>
+    </section>
+
+    <section class="skill-feature" aria-labelledby="skill-title"><div class="content-width skill-feature-card" data-section-reveal>
+      <div class="skill-visual" aria-hidden="true"><div class="skill-window"><span class="skill-window-label">TRACE / 00842</span><div class="skill-event"><i></i><span>tool · database.query</span><strong>42 ms</strong></div><div class="skill-event active"><i></i><span>skill · trace-deep-dive</span><strong>running</strong></div><div class="skill-event"><i></i><span>result · evidence-linked</span><strong>ready</strong></div></div></div>
+      <div class="skill-copy"><h2 id="skill-title">把分析交给内置 Skill</h2><p>Skill 直接读取已固定的 Trace 范围，完成评测、深挖和报告生成；用户无需填写一组与任务无关的配置框。</p><div class="skill-actions"><a class="button button-light" href="/#/beta/plugins">查看内置 Skill<img src="/guide-icons/arrow.svg" width="15" height="15" alt=""></a><a class="button button-outline" href="/#/beta/search">检索 Span<img src="/guide-icons/arrow.svg" width="15" height="15" alt=""></a></div></div>
+    </div></section>
+
+    <section class="evidence-system" aria-labelledby="evidence-title"><div class="content-width">
+      <header class="section-intro compact" data-section-reveal><svg class="section-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M12 16h40v32H12zM20 25h24M20 33h16M20 41h20"/></svg><h2 id="evidence-title">让每个结论<br>都回到证据</h2></header>
+      <div class="evidence-rows" data-section-reveal>
+        <article><strong>来源</strong><p>知道结果来自哪个 Trace、Span 与原始对象。</p><span>Trace → Span</span></article>
+        <article><strong>范围</strong><p>知道分析覆盖哪些记录，以及哪些内容未被纳入。</p><span>Selection snapshot</span></article>
+        <article><strong>方法</strong><p>知道由哪个 Skill、哪个版本和哪些参数得到结果。</p><span>Skill version</span></article>
+      </div>
+    </div></section>
+
+    <section class="resources" aria-labelledby="resources-title"><div class="content-width">
+      <header class="section-intro compact" data-section-reveal><svg class="section-mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M11 45h42M18 45V25l14-8 14 8v20M26 45V33h12v12"/></svg><h2 id="resources-title">开始使用 Trace Hunter</h2><a class="button button-light resources-cta" href="/#/">进入工作台<img src="/guide-icons/arrow.svg" width="16" height="16" alt=""></a></header>
+      <div class="resource-grid" data-section-reveal>
+        <a href="/#/beta/imports"><strong>导入 Agent Trace</strong><span>把不同来源转换为标准 Trace</span><em>开始导入 →</em></a>
+        <a href="/#/beta/search"><strong>检索 Span 证据</strong><span>使用 literal、regex 与 fuzzy 查询</span><em>开始检索 →</em></a>
+        <a href="/#/beta/plugins"><strong>使用内置 Skill</strong><span>运行评测、深挖与报告生成</span><em>查看 Skill →</em></a>
+      </div>
+    </div></section>
+  </main>
+  <footer class="content-width"><a href="#top" class="identity"><span class="brand-grid" aria-hidden="true">▦</span><span class="brand-wordmark">Trace Hunter</span></a><a href="/research.html">研究与参考<img src="/guide-icons/export.svg" width="13" height="13" alt=""></a></footer>
+</body>
+</html>

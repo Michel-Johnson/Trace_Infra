@@ -1,0 +1,6 @@
+{
+  "name": "agent-trace-recorder",
+  "description": "Records Trace Hunter's built-in Claude Code Agent to local immutable Trace sources",
+  "version": "0.1.1",
+  "author": {"name": "Trace Hunter"}
+}

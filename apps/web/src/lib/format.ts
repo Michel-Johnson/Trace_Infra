@@ -1,0 +1,12 @@
+import type { Row, Operation } from '../api/types';
+export const operations: Record<Operation, string> = { read: 'Read', bash: 'Bash', write: 'Write / Edit', skill: 'Skill', human: '交互', other: '其他' };
+export const isolation = { sandbox: '沙箱', non_sandbox: '非沙箱', unknown: '未知' };
+export const network = { allowed: '允许联网', blocked: '禁止联网', unknown: '联网状态未知' };
+export const seconds = (n: number | null | undefined) => n == null ? '未知' : n > 0 && n < 10 ? '< 0.01 秒' : `${(n / 1000).toLocaleString('zh-CN',{maximumFractionDigits:2})} 秒`;
+export const number = (n: number | null | undefined) => n == null ? '未知' : n.toLocaleString('zh-CN');
+export const json = (value: unknown) => value == null ? '未记录' : typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+export const responseLabel = (row: Row) => row.response_basis === 'measured' ? '模型请求' : row.response_basis === 'interval_estimate' ? '模型响应（估算）' : '模型响应';
+export const responseTime = (row: Row) => (row.response_basis === 'interval_estimate' ? '约 ' : '') + seconds(row.response_ms);
+export const callLabel = (row: Row) => row.skill ? `${row.skill.name} · 技能${row.skill.action === 'load' ? '加载' : '调用'}（${operations[row.operation]}）` : row.name;
+export const callTimeLabel = (row: Row) => row.operation === 'human' ? '交互用时' : '工具执行';
+export const casePath = (cid: string, qid: string) => `/collections/${encodeURIComponent(cid)}/cases/${encodeURIComponent(qid)}`;

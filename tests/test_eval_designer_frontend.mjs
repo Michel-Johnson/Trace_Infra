@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import ts from '../apps/web/node_modules/typescript/lib/typescript.js';
+const source=await readFile(new URL('../apps/web/src/skills/eval-designer.ts',import.meta.url),'utf8');
+const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {buildEvalDesignerPrompt}=await import('data:text/javascript;base64,'+Buffer.from(compiled).toString('base64'));
+const analysisSource=await readFile(new URL('../apps/web/src/skills/trace-analysis.ts',import.meta.url),'utf8');
+const analysisCompiled=ts.transpileModule(analysisSource,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
+const {buildAnalysisSkillPrompt}=await import('data:text/javascript;base64,'+Buffer.from(analysisCompiled).toString('base64'));
+const shell=await readFile(new URL('../apps/web/src/components/AppShell.tsx',import.meta.url),'utf8');
+const catalog=await readFile(new URL('../apps/web/src/skills/catalog.ts',import.meta.url),'utf8');
+test('current plugin area exposes the complete trace analysis skill chain',()=>{for(const path of ['/plugins/evaluations/designer','/plugins/evaluations/deep-dive','/plugins/evaluations/batch-analyzer','/plugins/reports'])assert.match(catalog,new RegExp(path.replaceAll('/','\\/')));const current=`${shell}\n${analysisSource}`;for(const name of ['Trace Eval Designer','Trace Deep Dive','Trace Batch Analyzer','Trace Analysis Reporter'])assert.match(current,new RegExp(name));});
+test('prompt preserves evidence boundaries',()=>{const prompt=buildEvalDesignerPrompt({kind:'skill_effect',question:'使用 Skill 后是否更好？',target:'lark-cli@2',population:'固定 revisions',decision:'决定是否默认加载'});assert.match(prompt,/\$trace-eval-designer/);assert.match(prompt,/model_context/);assert.match(prompt,/不得直接解释为因果关系/);assert.match(prompt,/不执行批量分析/);});
+test('blank fields stay explicit',()=>{const prompt=buildEvalDesignerPrompt({kind:'custom',question:'',target:'',population:'',decision:''});assert.equal((prompt.match(/尚未确定，请先与我澄清/g)||[]).length,4);assert.match(prompt,/Status: Draft/);});
+test('deep dive prompt requires an eval spec and a per-trace JSONL artifact',()=>{const prompt=buildAnalysisSkillPrompt('deep-dive',{goal:'Draft Spec @1',target:'10 条固定 Trace',scope:'model_context',output:'deep-dive-results.jsonl'});assert.match(prompt,/\$trace-deep-dive/);assert.match(prompt,/Draft\/Approved Eval Spec/);assert.match(prompt,/逐条输出 JSONL，不生成报告或总体比例/);assert.match(prompt,/observed、inferred、hypothesis/);});
+test('batch prompt requires approved spec and complete evidence handling',()=>{const prompt=buildAnalysisSkillPrompt('batch-analyzer',{goal:'执行评测',target:'spec@1.0.0',scope:'固定 revisions',output:'Analysis Result'});assert.match(prompt,/\$trace-batch-analyzer/);assert.match(prompt,/status=Approved/);assert.match(prompt,/完整分页/);assert.match(prompt,/unknown/);});
+test('report prompt preserves analysis boundaries',()=>{const prompt=buildAnalysisSkillPrompt('analysis-reporter',{goal:'写报告',target:'result-1',scope:'内部研发',output:'HTML'});assert.match(prompt,/\$trace-analysis-reporter/);assert.match(prompt,/不要重新执行评测/);assert.match(prompt,/coverage、unknown、partial/);});

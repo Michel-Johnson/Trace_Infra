@@ -1,0 +1,79 @@
+{
+    admin off
+    auto_https off
+}
+
+{$SITE_ADDRESS} {
+    bind {$WEB_HOST}
+    encode gzip zstd
+
+    # This whole v1 channel is authenticated again by the API; no Bearer value
+    # can turn into a trusted-peer operator, even if it is invalid or expired.
+    @service_v1 {
+        path /api/v1 /api/v1/*
+        header Authorization "Bearer *"
+    }
+    handle @service_v1 {
+        reverse_proxy {$API_UPSTREAM}
+    }
+
+    # These exact worker routes verify the task-scoped Bearer token in the API.
+    # A Bearer-looking header never bypasses browser/operator endpoint protection.
+    @worker_read {
+        method GET
+        path_regexp worker_read ^/api/(plugin|evaluation)-jobs/[^/]+/(input|record-read)$
+        header Authorization "Bearer *"
+    }
+    handle @worker_read {
+        reverse_proxy {$API_UPSTREAM}
+    }
+    @worker_write {
+        method POST
+        path_regexp worker_write ^/api/(plugin|evaluation)-jobs/[^/]+/(claim|heartbeat|query|results|fail)$
+        header Authorization "Bearer *"
+    }
+    handle @worker_write {
+        reverse_proxy {$API_UPSTREAM}
+    }
+
+    # MulmoTerminal uses absolute /assets, /api and /ws paths. Keep the
+    # platform's Vite output under /th-assets so the two applications can
+    # share the existing 8766 origin without rewriting upstream bundles.
+    @mulmo_page path /terminals /terminals/*
+    handle @mulmo_page {
+        root * {$MULMO_WEB_ROOT:/opt/trace-hunter-mulmoterminal-4.15.0/node_modules/mulmoterminal/dist}
+        try_files {path} /index.html
+        header Cache-Control "no-cache"
+        file_server
+    }
+    @mulmo_assets path /assets/*
+    handle @mulmo_assets {
+        root * {$MULMO_WEB_ROOT:/opt/trace-hunter-mulmoterminal-4.15.0/node_modules/mulmoterminal/dist}
+        file_server
+    }
+    @mulmo_ws path /ws /ws/*
+    handle @mulmo_ws {
+        reverse_proxy {$MULMO_UPSTREAM:127.0.0.1:34567}
+    }
+    @mulmo_api path_regexp mulmo_api ^/api/(activity|agent|collection-projects|decisions|dir-config|dir-config-detail|dir-icon|dir-sound|git-status|github|gui-mcp-groups|header|hook|issues|load|mcp|mcp-resolve|mulmo|plugin|pr-phase|prs|question|repo-dirs|rooms|scripts|session|sessions|shutdown|skills$|tool-calls|tools|transcript|translation|work-comment)(/|$)
+    handle @mulmo_api {
+        reverse_proxy {$MULMO_UPSTREAM:127.0.0.1:34567}
+    }
+
+    handle {
+        # Production points to a private file outside the repository and web root.
+        import {$TRACE_HUNTER_AUTH_CONFIG:auth-disabled.caddy}
+
+        @api path /api /api/*
+        handle @api {
+            reverse_proxy {$API_UPSTREAM}
+        }
+
+        handle {
+            root * {$WEB_ROOT}
+            try_files {path} /index.html
+            header Cache-Control "no-cache"
+            file_server
+        }
+    }
+}

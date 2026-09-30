@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+.bootstrap/
+node_modules/
+dist/
+*.tsbuildinfo
+var/
+tmp/
+external/
+apps/trace-lab
+# Personal experimental adapters use machine-local providers and environments.
+/call_llm_hook.py
+/training_luna_hook.py
+.DS_Store
+/apps/web/public/docs/
+/apps/web/public/case-gallery-data/
+.env
+.env.*
+!.env.example

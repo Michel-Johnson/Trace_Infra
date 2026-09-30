@@ -1,0 +1,137 @@
+name: trace-hunter
+
+x-backend: &backend
+  image: trace-hunter/backend:${TRACE_HUNTER_VERSION:-local}
+  build: &backend-build
+    context: ../..
+    dockerfile: deploy/containers/backend.Dockerfile
+    target: backend
+    args:
+      PYTHON_IMAGE: ${PYTHON_IMAGE:?Load deploy/containers/images.env}
+  environment: &backend-environment
+    DB_HOST: db
+    DB_PORT: "5432"
+    DB_NAME: trace_hunter
+    DB_USER: trace_hunter
+    DB_PASSWORD_FILE: /run/secrets/db_password
+    TRACE_HUNTER_CONTENT_DIR: /var/lib/trace-hunter/content
+  volumes:
+    - trace_content:/var/lib/trace-hunter/content
+  secrets:
+    - db_password
+  restart: unless-stopped
+  stop_grace_period: 75s
+
+services:
+  db:
+    image: ${POSTGRES_IMAGE:?Load deploy/containers/images.env}
+    environment:
+      POSTGRES_DB: trace_hunter
+      POSTGRES_USER: trace_hunter
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    secrets:
+      - db_password
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U trace_hunter -d trace_hunter"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    <<: *backend
+    command: ["migrate"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  reproject:
+    <<: *backend
+    command: ["rebuild-indexes"]
+    restart: "no"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    <<: *backend
+    image: trace-hunter/api:${TRACE_HUNTER_VERSION:-local}
+    build:
+      <<: *backend-build
+      target: api
+    command: ["api"]
+    environment:
+      <<: *backend-environment
+      API_HOST: 0.0.0.0
+      API_PORT: "8767"
+      OTLP_GRPC_ADDRESS: 0.0.0.0:4317
+      ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-http://127.0.0.1:8766}
+    ports:
+      - "${OTLP_GRPC_BIND:-127.0.0.1}:${OTLP_GRPC_PORT:-4317}:4317"
+    depends_on:
+      reproject:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8767/api/health',timeout=3))['status']=='ok'"]
+      interval: 5s
+      timeout: 4s
+      retries: 15
+      start_period: 10s
+
+  plugin:
+    <<: *backend
+    image: trace-hunter/plugin:${TRACE_HUNTER_VERSION:-local}
+    build:
+      <<: *backend-build
+      target: plugin
+    command: ["worker"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  web:
+    image: trace-hunter/web:${TRACE_HUNTER_VERSION:-local}
+    build:
+      context: ../..
+      dockerfile: deploy/containers/web.Dockerfile
+      args:
+        NODE_IMAGE: ${NODE_IMAGE:?Load deploy/containers/images.env}
+        CADDY_IMAGE: ${CADDY_IMAGE:?Load deploy/containers/images.env}
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${WEB_BIND:-127.0.0.1}:${WEB_PORT:-8766}:8766"
+    secrets:
+      - web_auth
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
+  tools:
+    profiles: [tools]
+    image: trace-hunter/agent-tools:${TRACE_HUNTER_VERSION:-local}
+    build:
+      context: ../..
+      dockerfile: deploy/containers/backend.Dockerfile
+      target: agent-tools
+      args:
+        PYTHON_IMAGE: ${PYTHON_IMAGE:?Load deploy/containers/images.env}
+    working_dir: /app
+    stdin_open: true
+
+secrets:
+  db_password:
+    file: ${DB_PASSWORD_FILE:?Provide the private database password file}
+  web_auth:
+    file: ${WEB_AUTH_FILE:?Provide a private Caddy basic_auth file}
+
+volumes:
+  trace_content:
+  postgres_data:
+  caddy_data:
+  caddy_config:

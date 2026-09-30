@@ -1,0 +1,1532 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:trace-hunter:platform:1.0-draft.1",
+  "title": "Trace Hunter platform companion design — offline only",
+  "$defs": {
+    "version_ref": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*\\.[a-zA-Z0-9_.-]+$": {}
+      },
+      "additionalProperties": false
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 0,
+          "maxItems": 20000,
+          "uniqueItems": true
+        },
+        "labels": {
+          "type": "object",
+          "maxProperties": 100,
+          "additionalProperties": {
+            "type": [
+              "string",
+              "number",
+              "boolean"
+            ]
+          }
+        },
+        "extensions": {
+          "$ref": "#/$defs/extensions"
+        }
+      },
+      "required": [
+        "tags",
+        "labels",
+        "extensions"
+      ],
+      "additionalProperties": false
+    },
+    "coverage_item": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "enum": [
+            "complete",
+            "partial",
+            "missing",
+            "unknown",
+            "redacted",
+            "not_applicable"
+          ]
+        },
+        "recorded_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "expected_count": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "state",
+        "recorded_count",
+        "expected_count",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "missing",
+                  "redacted",
+                  "not_applicable"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "recorded_count": {
+                "const": 0
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "partial",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "complete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "expected_count": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "not_applicable"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "expected_count": {
+                "const": 0
+              }
+            }
+          }
+        }
+      ]
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "versions": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "environment": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "messages": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "model_requests": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "contexts": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "tool_io": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "tool_timing": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "model_timing": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "model_usage": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "events": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "artifacts": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "sources": {
+          "$ref": "#/$defs/coverage_item"
+        }
+      },
+      "required": [
+        "versions",
+        "environment",
+        "messages",
+        "model_requests",
+        "contexts",
+        "tool_io",
+        "tool_timing",
+        "model_timing",
+        "model_usage",
+        "events",
+        "artifacts",
+        "sources"
+      ],
+      "additionalProperties": false
+    },
+    "gap": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "enum": [
+            "versions",
+            "environment",
+            "messages",
+            "model_requests",
+            "contexts",
+            "tool_io",
+            "tool_timing",
+            "model_timing",
+            "model_usage",
+            "events",
+            "artifacts",
+            "sources"
+          ]
+        },
+        "record_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(/|$)"
+        },
+        "state": {
+          "enum": [
+            "partial",
+            "missing",
+            "unknown",
+            "redacted",
+            "not_applicable"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 10000
+        }
+      },
+      "required": [
+        "domain",
+        "record_id",
+        "path",
+        "state",
+        "reason",
+        "detail"
+      ],
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "trace-hunter-platform/1.0-draft.1"
+        },
+        "kind": {
+          "const": "environment"
+        },
+        "env_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "isolation": {
+          "enum": [
+            "sandbox",
+            "non_sandbox"
+          ]
+        },
+        "runtime": {
+          "enum": [
+            "vm",
+            "container",
+            "host",
+            "remote_service"
+          ]
+        },
+        "runtime_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "initial_state_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "toolset_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "reset": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "fresh_instance",
+                "restore_snapshot",
+                "script",
+                "none"
+              ]
+            },
+            "procedure_ref": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/version_ref"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "reason": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mode",
+            "procedure_ref",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "network": {
+          "type": "object",
+          "properties": {
+            "model_gateway": {
+              "enum": [
+                "allowed",
+                "blocked"
+              ]
+            },
+            "tool_egress": {
+              "enum": [
+                "blocked",
+                "allowlist",
+                "unrestricted"
+              ]
+            },
+            "allowlist": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "minItems": 0,
+              "maxItems": 20000
+            },
+            "external_state_policy": {
+              "enum": [
+                "frozen",
+                "recorded_snapshot",
+                "live"
+              ]
+            }
+          },
+          "required": [
+            "model_gateway",
+            "tool_egress",
+            "allowlist",
+            "external_state_policy"
+          ],
+          "additionalProperties": false
+        },
+        "constraints": {
+          "type": "object",
+          "properties": {
+            "resources_ref": {
+              "$ref": "#/$defs/version_ref"
+            },
+            "permissions_ref": {
+              "$ref": "#/$defs/version_ref"
+            },
+            "time_policy": {
+              "enum": [
+                "frozen",
+                "recorded_wall_clock"
+              ]
+            },
+            "seed_policy": {
+              "enum": [
+                "fixed",
+                "recorded",
+                "unsupported"
+              ]
+            }
+          },
+          "required": [
+            "resources_ref",
+            "permissions_ref",
+            "time_policy",
+            "seed_policy"
+          ],
+          "additionalProperties": false
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "env_id",
+        "revision",
+        "isolation",
+        "runtime",
+        "runtime_ref",
+        "initial_state_ref",
+        "toolset_ref",
+        "reset",
+        "network",
+        "constraints",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "case": {
+      "type": "object",
+      "properties": {
+        "query_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "input_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "goal_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "interaction": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "single",
+                "scripted_multi",
+                "interactive_multi"
+              ]
+            },
+            "policy_ref": {
+              "$ref": "#/$defs/version_ref"
+            },
+            "max_turns": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "mode",
+            "policy_ref",
+            "max_turns"
+          ],
+          "additionalProperties": false
+        },
+        "oracle_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "environment_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/version_ref"
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        }
+      },
+      "required": [
+        "query_id",
+        "revision",
+        "title",
+        "input_ref",
+        "goal_ref",
+        "interaction",
+        "oracle_ref",
+        "environment_refs",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "benchmark": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "trace-hunter-platform/1.0-draft.1"
+        },
+        "kind": {
+          "const": "benchmark"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/case"
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "execution_policy": {
+          "type": "object",
+          "properties": {
+            "repeats": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "seeds": {
+              "type": "array",
+              "items": {
+                "type": "integer"
+              },
+              "minItems": 0,
+              "maxItems": 20000
+            },
+            "timeout_s": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_tokens": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "max_tool_calls": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "reset_per_attempt": {
+              "const": true
+            }
+          },
+          "required": [
+            "repeats",
+            "seeds",
+            "timeout_s",
+            "max_tokens",
+            "max_tool_calls",
+            "reset_per_attempt"
+          ],
+          "additionalProperties": false
+        },
+        "default_plugin_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/version_ref"
+          },
+          "minItems": 0,
+          "maxItems": 20000
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "revision",
+        "cases",
+        "execution_policy",
+        "default_plugin_refs",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "component": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "run_metadata": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "trace-hunter-platform/1.0-draft.1"
+        },
+        "kind": {
+          "const": "run_metadata"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "query_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "env_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "trace_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "case_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "environment_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "benchmark_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "experiment_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sample_origin": {
+          "enum": [
+            "real",
+            "synthetic"
+          ]
+        },
+        "versions": {
+          "type": "object",
+          "properties": {
+            "harness": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "collector": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "adapter": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "code": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "config": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "prompt": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "toolset": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/component"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "harness",
+            "collector",
+            "adapter",
+            "code",
+            "config",
+            "prompt",
+            "toolset"
+          ],
+          "additionalProperties": false
+        },
+        "environment_match": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "enum": [
+                "matched",
+                "mismatched",
+                "unverified"
+              ]
+            },
+            "evidence_refs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/version_ref"
+              },
+              "minItems": 0,
+              "maxItems": 20000
+            },
+            "reason": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "status",
+            "evidence_refs",
+            "reason"
+          ],
+          "additionalProperties": false
+        },
+        "coverage": {
+          "$ref": "#/$defs/coverage"
+        },
+        "gaps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/gap"
+          },
+          "minItems": 0,
+          "maxItems": 20000
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "run_id",
+        "query_id",
+        "env_id",
+        "trace_ref",
+        "case_ref",
+        "environment_ref",
+        "benchmark_ref",
+        "experiment_ref",
+        "sample_origin",
+        "versions",
+        "environment_match",
+        "coverage",
+        "gaps",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "requirement": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "enum": [
+            "versions",
+            "environment",
+            "messages",
+            "model_requests",
+            "contexts",
+            "tool_io",
+            "tool_timing",
+            "model_timing",
+            "model_usage",
+            "events",
+            "artifacts",
+            "sources"
+          ]
+        },
+        "minimum": {
+          "enum": [
+            "complete",
+            "partial"
+          ]
+        },
+        "on_missing": {
+          "enum": [
+            "block",
+            "skip",
+            "allow_partial"
+          ]
+        }
+      },
+      "required": [
+        "domain",
+        "minimum",
+        "on_missing"
+      ],
+      "additionalProperties": false
+    },
+    "metric_definition": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "type": {
+          "enum": [
+            "number",
+            "boolean",
+            "string"
+          ]
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "direction": {
+          "enum": [
+            "higher",
+            "lower",
+            "none"
+          ]
+        },
+        "aggregation": {
+          "enum": [
+            "none",
+            "mean",
+            "sum",
+            "pass_rate",
+            "distribution"
+          ]
+        }
+      },
+      "required": [
+        "key",
+        "type",
+        "unit",
+        "minimum",
+        "maximum",
+        "direction",
+        "aggregation"
+      ],
+      "additionalProperties": false
+    },
+    "plugin": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "trace-hunter-platform/1.0-draft.1"
+        },
+        "kind": {
+          "const": "plugin"
+        },
+        "plugin_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "package_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "trace_versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "entrypoint": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "external_program",
+                "agent_skill"
+              ]
+            },
+            "ref": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": [
+            "kind",
+            "ref"
+          ],
+          "additionalProperties": false
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "run",
+              "turn",
+              "span",
+              "comparison"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/requirement"
+          },
+          "minItems": 0,
+          "maxItems": 20000
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "trace_read",
+              "artifact_read",
+              "oracle_read",
+              "result_submit",
+              "model_gateway"
+            ]
+          },
+          "minItems": 0,
+          "maxItems": 20000,
+          "uniqueItems": true
+        },
+        "config_schema": {
+          "type": "object"
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metric_definition"
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "plugin_id",
+        "version",
+        "package_digest",
+        "trace_versions",
+        "entrypoint",
+        "scopes",
+        "requirements",
+        "permissions",
+        "config_schema",
+        "metrics",
+        "metadata"
+      ],
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "document_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "record_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(/|$)"
+        }
+      },
+      "required": [
+        "document_id",
+        "record_id",
+        "path"
+      ],
+      "additionalProperties": false
+    },
+    "metric_value": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "status": {
+          "enum": [
+            "evaluated",
+            "partial",
+            "insufficient_data",
+            "skipped",
+            "error"
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "boolean",
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 10000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/coverage_item"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/evidence"
+          },
+          "minItems": 0,
+          "maxItems": 20000
+        }
+      },
+      "required": [
+        "key",
+        "status",
+        "value",
+        "reason",
+        "coverage",
+        "evidence"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "insufficient_data",
+                  "skipped",
+                  "error"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              },
+              "reason": {
+                "type": "string",
+                "maxLength": 10000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "evaluated",
+                  "partial"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": [
+                  "number",
+                  "boolean",
+                  "string"
+                ]
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/evidence"
+                },
+                "minItems": 1,
+                "maxItems": 20000
+              }
+            }
+          }
+        }
+      ]
+    },
+    "evaluation_result": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": "trace-hunter-platform/1.0-draft.1"
+        },
+        "kind": {
+          "const": "evaluation_result"
+        },
+        "job_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "attempt": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "plugin_ref": {
+          "$ref": "#/$defs/version_ref"
+        },
+        "input_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/version_ref"
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "config_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "dependency_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/version_ref"
+          },
+          "minItems": 0,
+          "maxItems": 20000
+        },
+        "scope": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "enum": [
+                "run",
+                "turn",
+                "span",
+                "comparison"
+              ]
+            },
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "minItems": 1,
+              "maxItems": 20000
+            }
+          },
+          "required": [
+            "kind",
+            "ids"
+          ],
+          "additionalProperties": false
+        },
+        "status": {
+          "enum": [
+            "evaluated",
+            "partial",
+            "insufficient_data",
+            "skipped",
+            "error"
+          ]
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/metric_value"
+          },
+          "minItems": 1,
+          "maxItems": 20000
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "severity": {
+                "enum": [
+                  "info",
+                  "warning",
+                  "error"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/evidence"
+                },
+                "minItems": 0,
+                "maxItems": 20000
+              },
+              "repair_suggestion": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message",
+              "evidence",
+              "repair_suggestion"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 20000
+        },
+        "execution_trace_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/version_ref"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "metadata": {
+          "$ref": "#/$defs/metadata"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "job_id",
+        "attempt",
+        "plugin_ref",
+        "input_refs",
+        "config_digest",
+        "dependency_refs",
+        "scope",
+        "status",
+        "metrics",
+        "findings",
+        "execution_trace_ref",
+        "metadata"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/environment"
+    },
+    {
+      "$ref": "#/$defs/benchmark"
+    },
+    {
+      "$ref": "#/$defs/run_metadata"
+    },
+    {
+      "$ref": "#/$defs/plugin"
+    },
+    {
+      "$ref": "#/$defs/evaluation_result"
+    }
+  ]
+}

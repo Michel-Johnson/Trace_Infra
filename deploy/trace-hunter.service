@@ -1,0 +1,23 @@
+[Unit]
+Description=Trace Hunter trace comparison platform
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/apps/trace-hunter
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+Environment=TRACE_HUNTER_HOST=127.0.0.1
+Environment=TRACE_HUNTER_PORT=8766
+Environment=TRACE_HUNTER_ORIGIN=http://127.0.0.1:8766
+EnvironmentFile=-%h/apps/trace-hunter/var/server.env
+ExecStart=%h/apps/trace-hunter/.venv/bin/python scripts/serve_platform.py --host ${TRACE_HUNTER_HOST} --port ${TRACE_HUNTER_PORT} --allowed-origin ${TRACE_HUNTER_ORIGIN}
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=30
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

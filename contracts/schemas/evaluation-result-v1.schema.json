@@ -1,0 +1,318 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": "trace-hunter/evaluation-result/1.0"
+    },
+    "job_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "plugin_ref": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "manifest_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "package_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "id",
+        "version",
+        "manifest_digest",
+        "package_digest"
+      ],
+      "additionalProperties": false
+    },
+    "input_ref": {
+      "type": "object",
+      "properties": {
+        "run_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "snapshot_digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "run_id",
+        "digest",
+        "snapshot_digest"
+      ],
+      "additionalProperties": false
+    },
+    "config_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "scope": {
+      "enum": [
+        "task",
+        "all"
+      ]
+    },
+    "score": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "enum": [
+            "evaluated",
+            "partial",
+            "insufficient_data",
+            "skipped"
+          ]
+        },
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "value": {
+                "type": [
+                  "number",
+                  "boolean",
+                  "string",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "evaluated",
+                  "partial",
+                  "insufficient_data",
+                  "skipped"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "span",
+                        "evidence",
+                        "phase"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 200
+              }
+            },
+            "required": [
+              "key",
+              "value",
+              "status",
+              "reason",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 50
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "severity": {
+                "enum": [
+                  "info",
+                  "warning",
+                  "error"
+                ]
+              },
+              "message": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "repair_suggestion": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "maxLength": 10000
+              },
+              "evidence": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "enum": [
+                        "span",
+                        "evidence",
+                        "phase"
+                      ]
+                    },
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 256
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "id"
+                  ],
+                  "additionalProperties": false
+                },
+                "maxItems": 200
+              }
+            },
+            "required": [
+              "code",
+              "severity",
+              "message",
+              "repair_suggestion",
+              "evidence"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 200
+        },
+        "usage": {
+          "type": "object",
+          "properties": {
+            "input_tokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "output_tokens": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cost": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "currency": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 8
+            }
+          },
+          "required": [
+            "input_tokens",
+            "output_tokens",
+            "cost",
+            "currency"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "status",
+        "metrics",
+        "findings",
+        "usage"
+      ],
+      "additionalProperties": false
+    },
+    "score_digest": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "execution": {
+      "type": "object",
+      "properties": {
+        "worker": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "elapsed_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "worker",
+        "elapsed_ms"
+      ],
+      "additionalProperties": false
+    },
+    "created_at": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    }
+  },
+  "required": [
+    "schema_version",
+    "job_id",
+    "attempt",
+    "plugin_ref",
+    "input_ref",
+    "config_digest",
+    "scope",
+    "score",
+    "score_digest",
+    "execution",
+    "created_at"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,13 @@
+.th-simple-import .th-infra-toolbar{padding-right:10px}
+.th-simple-import .th-infra-toolbar>div{gap:9px}
+.th-import-format{height:36px;padding:0 10px;display:flex;align-items:center;gap:8px;border:1px solid #d9d9dd;border-radius:8px;background:#fff;color:#5d6068;font-size:15px;font-weight:600}
+.th-import-format select{height:32px;min-width:180px;padding:0 26px 0 4px;border:0;background:#fff;color:#303238;font-size:15px;outline:0}
+.th-import-auto{height:36px;padding:0 11px;display:flex;align-items:center;border-radius:8px;background:#f0f0f4;color:#555861;font-size:15px;font-weight:650;white-space:nowrap}
+.th-simple-import .th-batch-summary{margin-top:16px}
+.th-import-progress-note{margin:9px 0 0;color:#626a77;font-size:13px}
+.th-import-current-state{margin:12px 0 0;color:#555e6d;font-size:14px;line-height:1.5}
+.th-batch-files>article.duplicate{border-color:#d7c28f}
+.th-batch-files>article.duplicate>header>b{background:#fff1d1;color:#795f25}
+.th-batch-files>article.duplicate>p{background:#fff8e9;color:#725b2b}
+.th-upload-stage{margin-top:13px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:6px 14px;color:#626a77;font-size:13px}.th-upload-stage b{color:#4e64cf;font-variant-numeric:tabular-nums}.th-upload-stage progress{grid-column:1/-1;width:100%;height:5px;border:0;border-radius:999px;background:#edf0f4;accent-color:#4e64cf}
+@media(max-width:760px){.th-simple-import .th-infra-toolbar{align-items:stretch;flex-direction:column}.th-simple-import .th-infra-toolbar>div{align-items:stretch;flex-wrap:wrap}.th-import-format{flex:1}.th-import-format select{min-width:0;flex:1}}

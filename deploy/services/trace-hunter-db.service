@@ -1,0 +1,15 @@
+[Unit]
+Description=Trace Hunter PostgreSQL
+After=network.target
+
+[Service]
+ExecStart=%h/apps/trace-hunter-postgres-18.6/bin/postgres -D %h/apps/trace-hunter-data/postgres
+Restart=on-failure
+RestartSec=3
+KillSignal=SIGINT
+TimeoutStopSec=60
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

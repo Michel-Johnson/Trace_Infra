@@ -1,0 +1,534 @@
+diff --git a/src/components/GridView.vue b/src/components/GridView.vue
+index 1d0a6eb5..520a2fd0 100644
+--- a/src/components/GridView.vue
++++ b/src/components/GridView.vue
+@@ -1,6 +1,7 @@
+ <script setup lang="ts">
+ import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from "vue";
+ import TerminalGrid, { type CockpitRow } from "./TerminalGrid.vue";
++import TerminalView from "./Terminal.vue";
+ import AppSettingsModal from "./AppSettingsModal.vue";
+ import LaunchPanel from "./LaunchPanel.vue";
+ import { cellForAgent, cellForPick } from "./launchCell";
+@@ -97,6 +98,9 @@ const onTerminalsRoute = () => router.currentRoute.value.name === "terminals";
+ // Trace Hunter embeds the native Claude TUI, but owns the surrounding new/resume controls.
+ // Never reuse Mulmo's persisted grid on entry: absent ?resume= means a NEW Claude session.
+ const embedded = new URLSearchParams(window.location.search).get("trace_hunter") !== "0";
++// A background import has no PTY. Reuse the terminal canvas to show its persisted
++// Agent events, without asking Mulmo to resume (and thereby start) Claude.
++const replaySessionId = embedded ? new URLSearchParams(window.location.search).get("import_session") : null;
+ if (embedded) document.documentElement.dataset.traceHunter = "1";
+ const { setFontSize } = useTerminalFontSize();
+ function onTraceHunterMessage(event: MessageEvent): void {
+@@ -133,7 +137,8 @@ const embeddedCwd = "/var/lib/trace-hunter-terminal/workspace";
+ const resumeId = new URLSearchParams(window.location.search).get("resume");
+ const validResume = resumeId && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(resumeId) ? resumeId : null;
+ const embeddedState: GridState = {
+-  cells: [{ uid: 0, session: validResume, cwd: embeddedCwd, ...(validResume ? {} : { autoStart: true }) }],
++  cells: [{ uid: 0, session: validResume, cwd: embeddedCwd,
++    ...(validResume || replaySessionId !== null ? {} : { autoStart: true }) }],
+   expanded: 0,
+   page: 0,
+   nextUid: 1,
+@@ -923,7 +928,7 @@ onBeforeUnmount(detachSpawnedChat);
+       @settings="showSettings = true"
+     />
+     <nav
+-      v-if="pages > 1 && expandedUid === null"
++      v-if="replaySessionId === null && pages > 1 && expandedUid === null"
+       class="flex-none flex items-center gap-1 h-[30px] px-4 bg-panel border-b border-border"
+       aria-label="Grid tabs"
+     >
+@@ -937,7 +942,16 @@ onBeforeUnmount(detachSpawnedChat);
+         {{ p }}
+       </button>
+     </nav>
++    <TerminalView
++      v-if="replaySessionId !== null"
++      class="flex-1 min-h-0 min-w-0"
++      :session-id="null"
++      :connect-key="0"
++      :replay-session-id="replaySessionId"
++      :hide-header="true"
++    />
+     <TerminalGrid
++      v-else
+       ref="gridRef"
+       class="flex-1 min-h-0 min-w-0"
+       :trace-hunter-embedded="embedded"
+@@ -972,7 +986,7 @@ onBeforeUnmount(detachSpawnedChat);
+       @move="onMove"
+       @status="onStatus"
+     />
+-    <footer v-if="noRunningTerminals" class="flex-none border-t border-border bg-panel px-4 py-2 text-center">
++    <footer v-if="replaySessionId === null && noRunningTerminals" class="flex-none border-t border-border bg-panel px-4 py-2 text-center">
+       <GuideLinks />
+     </footer>
+     <LaunchPanel
+diff --git a/src/components/Terminal.vue b/src/components/Terminal.vue
+index e959cee4..32c4ef69 100644
+--- a/src/components/Terminal.vue
++++ b/src/components/Terminal.vue
+@@ -30,6 +30,7 @@ import { useSessionContext } from "../composables/useSessionContext";
+ import { runHeaderButton } from "../composables/useHeaderAction";
+ import type { RunCommand } from "./runCommand";
+ import type { LaunchChoice } from "./wsUrl";
++import { ephemeralSlotKey } from "./terminalSlotKey";
+ 
+ // `null` => start a fresh session; otherwise resume the given session id.
+ // `connectKey` increments on every user action so re-selecting the same
+@@ -52,6 +53,9 @@ import type { LaunchChoice } from "./wsUrl";
+ const props = defineProps<{
+   sessionId: string | null;
+   connectKey: number;
++  // Read-only Trace Hunter Agent import: use this terminal's xterm canvas but
++  // fetch the archived event stream instead of opening a Claude PTY.
++  replaySessionId?: string | null;
+   cwd?: string | null;
+   devTerminal?: boolean;
+   command?: RunCommand | null;
+@@ -113,10 +117,11 @@ const emit = defineEmits<{
+ // The durable runtime (socket + xterm) lives in the manager, keyed by a stable slot
+ // id. A persisted slot survives this component's unmount; an ephemeral one is torn
+ // down. Captured once — the key is stable for the component's life.
+-const slotKey = props.persistKey ?? `ephemeral-${crypto.randomUUID()}`;
++const slotKey = props.persistKey ?? ephemeralSlotKey();
+ function currentTarget(): conn.ConnTarget {
+   return {
+     sessionId: props.sessionId,
++    replaySessionId: props.replaySessionId ?? null,
+     cwd: props.cwd ?? null,
+     devTerminal: !!props.devTerminal,
+     command: props.command ?? null,
+@@ -174,7 +179,7 @@ const { buttons: resolvedButtons, env: worktreeEnv } = useHeaderButtons({
+   agent: computed(() => props.agent ?? "claude"),
+   model: computed(() => sessionContext.value?.model ?? null),
+ });
+-const headerButtons = computed(() => (props.command || props.launcher ? [] : resolvedButtons.value));
++const headerButtons = computed(() => (props.command || props.launcher || props.replaySessionId ? [] : resolvedButtons.value));
+ 
+ // `input`/`open` dispatch client-side. `shell` hands off to a command cell: the browser never holds the
+ // command — it emits the button id + this session's context, and the server re-resolves it (see /ws/run).
+@@ -227,7 +232,7 @@ async function onDeck(absolutePath: string): Promise<void> {
+ 
+ // Git status chip — single view only. In the grid the embedding TerminalCell shows
+ // its own chip, so null the cwd here to skip redundant polling (status stays null).
+-const gitCwd = computed(() => (props.devTerminal ? null : serverCwd.value));
++const gitCwd = computed(() => (props.devTerminal || props.replaySessionId ? null : serverCwd.value));
+ const { status: gitStatus } = useGitStatus(gitCwd);
+ const dragOver = ref(false);
+ const { fontSize } = useTerminalFontSize();
+@@ -283,7 +288,7 @@ let attachedHost: HTMLElement | null = null;
+ 
+ onMounted(() => {
+   // Probe voice-input capability so the mic button shows only where supported.
+-  voice.refreshAvailability().catch(() => {});
++  if (!props.replaySessionId) voice.refreshAvailability().catch(() => {});
+ 
+   const container = terminalRef.value;
+   if (!container) return;
+diff --git a/src/components/terminalSlotKey.ts b/src/components/terminalSlotKey.ts
+new file mode 100644
+index 00000000..29ccb052
+--- /dev/null
++++ b/src/components/terminalSlotKey.ts
+@@ -0,0 +1,6 @@
++// The internal HTTP origin is not a secure context and may lack crypto.randomUUID.
++// This is a local xterm slot identity, never a credential or persistent session ID.
++export function ephemeralSlotKey(randomUUID: (() => string) | null | undefined = globalThis.crypto?.randomUUID?.bind(globalThis.crypto)): string {
++  const id = randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
++  return `ephemeral-${id}`;
++}
+diff --git a/src/composables/traceHunterReplay.ts b/src/composables/traceHunterReplay.ts
+new file mode 100644
+index 00000000..c5f44782
+--- /dev/null
++++ b/src/composables/traceHunterReplay.ts
+@@ -0,0 +1,156 @@
++// A read-only source for Mulmo's existing xterm canvas. It never opens a PTY,
++// resumes Claude, or sends input to the Agent worker.
++type ReplayTurn = { turn_id: string; ordinal: number; prompt: string; state: string; task_id: string | null };
++type ReplaySession = { session_id: string; project_id: string; turns: ReplayTurn[] };
++type ReplayEvent = { id: number; turn_id: string; type: string; payload: Record<string, unknown> };
++type ReplayTask = {
++  state: string;
++  current_stage?: string | null;
++  progress?: number;
++  error?: string | { message?: string } | null;
++  result?: { run_id?: string; revision?: number } | null;
++};
++
++const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
++const finalStates = new Set(["succeeded", "failed", "cancelled"]);
++const stages: Record<string, string> = {
++  format_inspect: "识别格式", adapter_select: "选择或开发 Adapter",
++  adapter_validate: "校验字段与来源", trace_import: "导入 Trace", readback: "回读结果",
++};
++
++// Imported prompts and tool output are untrusted terminal input. Do not let
++// their control bytes move the cursor, overwrite evidence, or set clipboard data.
++export function safeReplayText(value: unknown, limit = 8192): string {
++  const source = String(value ?? "");
++  const clipped = source.length > limit ? `${source.slice(0, limit)}…（已截断）` : source;
++  return clipped.replace(/[\u0000-\u0009\u000b-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g, "");
++}
++
++export function replayEventText(event: ReplayEvent, origin: string): string | null {
++  const data = event.payload || {};
++  if (event.type === "message") {
++    const text = safeReplayText(data.text);
++    const tools = Array.isArray(data.tools)
++      ? data.tools.map((tool) => safeReplayText((tool as { name?: unknown })?.name || "Tool", 100)) : [];
++    return [text, ...tools.map((tool) => `[调用工具] ${tool}`)].filter(Boolean).join("\n");
++  }
++  if (event.type === "tool_result") {
++    const label = data.is_error ? "工具失败" : "工具返回";
++    return `[${label}] ${safeReplayText(data.tool_use_id, 120)}\n${safeReplayText(data.content, 4096)}`;
++  }
++  if (event.type === "retry") return `[重试] ${safeReplayText(data.error, 1000)}`;
++  if (event.type === "failed" || event.type === "cancelled")
++    return `[Agent ${event.type === "failed" ? "失败" : "已取消"}] ${safeReplayText(data.error, 1000)}`;
++  if (event.type === "succeeded") return "[Agent 回合完成；等待导入结果回读]";
++  if (event.type === "trace_ready" && typeof data.run_id === "string" && typeof data.project_id === "string") {
++    const url = `${origin}/#/traces/${encodeURIComponent(data.run_id)}?project=${encodeURIComponent(data.project_id)}&revision=${Number(data.revision) || 1}`;
++    return `[Agent Trace] ${url}`;
++  }
++  return null; // delta is omitted: the final message contains the same text.
++}
++
++export function startTraceHunterReplay(sessionId: string, write: (text: string) => void,
++  status: (value: "connecting" | "connected" | "disconnected") => void): () => void {
++  const controller = new AbortController();
++  let stopped = false;
++  let stream: EventSource | null = null;
++  let timer: ReturnType<typeof setInterval> | null = null;
++  let lastEventId = 0;
++  let lastTaskLabel = "";
++  let taskDone = false;
++  const shownTurns = new Set<string>();
++  const print = (text: string) => { if (!stopped) write(`${text.replace(/\r?\n/g, "\r\n")}\r\n`); };
++  const request = async <T>(url: string): Promise<T> => {
++    const response = await fetch(url, { credentials: "same-origin", signal: controller.signal });
++    if (!response.ok) throw new Error(response.status === 404
++      ? "当前浏览器无法读取该会话；它可能由另一个浏览器发起" : `HTTP ${response.status}`);
++    return response.json() as Promise<T>;
++  };
++  const start = async () => {
++    if (!uuid.test(sessionId)) throw new Error("无效的导入会话 ID");
++    const root = `/api/v1/agent/sessions/${encodeURIComponent(sessionId)}`;
++    const session = await request<ReplaySession>(root);
++    if (stopped) return;
++    status("connected");
++    print(`Trace Hunter 导入任务 · 只读终端\n项目：${safeReplayText(session.project_id, 120)}\n会话：${safeReplayText(session.session_id, 120)}`);
++    const turns = new Map(session.turns.map((turn) => [turn.turn_id, turn]));
++    const showTurn = (turnId: string) => {
++      if (shownTurns.has(turnId)) return;
++      shownTurns.add(turnId);
++      const turn = turns.get(turnId);
++      if (turn) print(`\n── 回合 ${turn.ordinal} ──\n${safeReplayText(turn.prompt, 4096)}`);
++    };
++    const showEvent = (event: ReplayEvent) => {
++      if (!Number.isSafeInteger(event.id) || event.id <= lastEventId) return;
++      lastEventId = event.id;
++      showTurn(event.turn_id);
++      const text = replayEventText(event, window.location.origin);
++      if (text) print(text);
++    };
++    while (!stopped) {
++      const page = await request<{ items: ReplayEvent[] }>(`${root}/events/page?after=${lastEventId}`);
++      for (const event of page.items) showEvent(event);
++      if (page.items.length < 200) break;
++    }
++    if (stopped) return;
++    const latest = session.turns.at(-1);
++    if (latest) showTurn(latest.turn_id);
++    const taskTurn = [...session.turns].reverse().find((turn) => turn.task_id);
++    if (taskTurn?.task_id) {
++      const taskUrl = `/api/v1/projects/${encodeURIComponent(session.project_id)}/tasks/${encodeURIComponent(taskTurn.task_id)}`;
++      const poll = async () => {
++        try {
++          const task = await request<ReplayTask>(taskUrl);
++          if (stopped) return;
++          const stage = task.current_stage ? stages[task.current_stage] || safeReplayText(task.current_stage, 100) : "等待处理";
++          const progress = typeof task.progress === "number" ? ` · ${Math.round(task.progress * 100)}%` : "";
++          const label = `${task.state} · ${stage}${progress}`;
++          if (label !== lastTaskLabel) {
++            lastTaskLabel = label;
++            print(`[导入任务] ${label}`);
++          }
++          if (finalStates.has(task.state)) {
++            taskDone = true;
++            if (task.state === "succeeded" && task.result?.run_id) {
++              print(`[导入成功] ${window.location.origin}/#/traces/${encodeURIComponent(task.result.run_id)}?project=${encodeURIComponent(session.project_id)}&revision=${task.result.revision || 1}`);
++            } else if (task.state !== "succeeded") {
++              const error = typeof task.error === "string" ? task.error : task.error?.message;
++              print(`[导入${task.state === "cancelled" ? "已取消" : "失败"}] ${safeReplayText(error || "请查看任务详情", 1000)}`);
++            }
++            if (timer) clearInterval(timer);
++            timer = null;
++            stream?.close();
++            stream = null;
++          }
++        } catch (error) {
++          if (!stopped && !(error instanceof DOMException && error.name === "AbortError"))
++            print(`[任务状态读取失败] ${safeReplayText(error, 300)}`);
++        }
++      };
++      await poll();
++      if (!stopped && !taskDone) {
++        timer = setInterval(() => void poll(), 1500);
++      }
++    }
++    if (stopped || taskDone || finalStates.has(latest?.state || "")) return;
++    stream = new EventSource(`${root}/events?after=${lastEventId}`);
++    const types = ["queued", "running", "message", "tool_result", "retry", "trace_ready", "succeeded", "failed", "cancelled"];
++    for (const type of types) stream.addEventListener(type, (event) => {
++      try { showEvent(JSON.parse((event as MessageEvent).data) as ReplayEvent); }
++      catch { print("[会话事件格式无效]"); }
++    });
++    stream.onopen = () => { if (!stopped) status("connected"); };
++    stream.onerror = () => { if (!stopped) status("connecting"); };
++  };
++  void start().catch((error) => {
++    if (stopped || (error instanceof DOMException && error.name === "AbortError")) return;
++    status("disconnected");
++    print(`无法读取导入会话：${safeReplayText(error, 300)}。不会启动新的 Claude 会话。`);
++  });
++  return () => {
++    stopped = true;
++    controller.abort();
++    stream?.close();
++    if (timer) clearInterval(timer);
++  };
++}
+diff --git a/src/composables/useTerminalConnections.ts b/src/composables/useTerminalConnections.ts
+index a42d355a..ca73b8dc 100644
+--- a/src/composables/useTerminalConnections.ts
++++ b/src/composables/useTerminalConnections.ts
+@@ -58,6 +58,7 @@ import { tryOpenInPane } from "./filesPaneOpener";
+ import { filesGotoFile } from "./useFilesView";
+ import { writeTerminalSelection } from "../utils/terminalSelectionClipboard";
+ import type { TerminalAgent } from "../../common/sessionAgent";
++import { startTraceHunterReplay } from "./traceHunterReplay";
+ 
+ export type ConnStatus = "connecting" | "connected" | "disconnected";
+ 
+@@ -65,6 +66,7 @@ export type ConnStatus = "connecting" | "connected" | "disconnected";
+ // change (session switch / relaunch) hands a fresh target to retarget().
+ export interface ConnTarget {
+   sessionId: string | null;
++  replaySessionId?: string | null;
+   cwd: string | null;
+   devTerminal: boolean;
+   command: RunCommand | null;
+@@ -87,7 +89,7 @@ export interface ConnTarget {
+ // The `terminalSubmit` mapping describes the user's CLAUDE binding, so it only applies to
+ // Claude cells. A launcher / another agent / command / dev-terminal cell is a shell or another TUI
+ // where a bare Enter must stay xterm's native \r — a reversed setting must not rewrite it.
+-export const isClaudeTarget = (t: ConnTarget): boolean => !t.devTerminal && !t.command && !t.launcher && (t.agent ?? "claude") === "claude";
++export const isClaudeTarget = (t: ConnTarget): boolean => !t.replaySessionId && !t.devTerminal && !t.command && !t.launcher && (t.agent ?? "claude") === "claude";
+ 
+ // The submit/newline byte mapping in effect for one connection: the user's `terminalSubmit`
+ // setting for a Claude cell, the standard binding for everything else. Used by the keyboard
+@@ -145,6 +147,7 @@ interface Conn {
+   fitAddon: FitAddon;
+   host: HTMLDivElement; // term.open()'d into this ONCE; re-parented on attach/detach
+   ws: WebSocket | null;
++  replayStop: (() => void) | null;
+   knownSessionId: string | null;
+   knownCwd: string | null; // server-resolved cwd, replayed on (re)attach
+   target: ConnTarget;
+@@ -367,6 +370,7 @@ export const isOpenableTerminalLink = (uri: string): boolean => /^https?:\/\//i.
+ // Claude-scoped `terminalSubmit` mapping) are sent by us and the default \r suppressed.
+ function wireTerminalInput(term: Terminal, c: Conn): void {
+   const send = (data: string): void => {
++    if (c.target.replaySessionId) return;
+     // Announced even when the socket is down: the user typed either way, and what a parked cell
+     // reads it for (#992) is "someone is using this", not "the PTY received it".
+     //
+@@ -536,6 +540,7 @@ function ensure(key: string, target: ConnTarget, font: TerminalFont): Conn {
+     fitAddon,
+     host,
+     ws: null,
++    replayStop: null,
+     knownSessionId: target.sessionId,
+     knownCwd: null,
+     target,
+@@ -614,12 +619,15 @@ function scheduleReconnect(c: Conn) {
+ 
+ function connect(c: Conn) {
+   if (c.released) return;
++  c.replayStop?.();
++  c.replayStop = null;
+   if (c.reconnectTimer) {
+     clearTimeout(c.reconnectTimer);
+     c.reconnectTimer = null;
+   }
+   // Neutralise the old socket's late events via the `sock !== c.ws` guards below.
+   if (c.ws) c.ws.close();
++  c.ws = null;
+   c.term.reset();
+   // The mouse modes belonged to the session being replaced. Keeping them would make the next
+   // app inherit "wants wheel reports" it never asked for, and its wheel would deliver escape
+@@ -632,6 +640,16 @@ function connect(c: Conn) {
+   const v = connView.get(c.key);
+   if (v) v.serverCwd = c.target.cwd;
+ 
++  if (c.target.replaySessionId) {
++    c.term.options.disableStdin = true;
++    c.term.options.cursorBlink = false;
++    c.replayStop = startTraceHunterReplay(c.target.replaySessionId,
++      (text) => c.term.write(text), (value) => { if (!c.released) setStatus(c, value); });
++    return;
++  }
++  c.term.options.disableStdin = false;
++  c.term.options.cursorBlink = true;
++
+   // Resume the known id (server-learned, or the prop) so a reconnect re-attaches the
+   // same session instead of spawning a fresh one each retry.
+   const resumeId = c.knownSessionId ?? c.target.sessionId;
+@@ -803,6 +821,8 @@ export function release(key: string) {
+   const c = conns.get(key);
+   if (!c) return;
+   c.released = true;
++  c.replayStop?.();
++  c.replayStop = null;
+   if (c.reconnectTimer) {
+     clearTimeout(c.reconnectTimer);
+     c.reconnectTimer = null;
+diff --git a/test/src/components/terminalSlotKey.spec.ts b/test/src/components/terminalSlotKey.spec.ts
+new file mode 100644
+index 00000000..589cd1c9
+--- /dev/null
++++ b/test/src/components/terminalSlotKey.spec.ts
+@@ -0,0 +1,12 @@
++import { describe, expect, it } from "vitest";
++import { ephemeralSlotKey } from "../../../src/components/terminalSlotKey";
++
++describe("ephemeral terminal slot identity", () => {
++  it("uses a UUID when the browser supplies one", () => {
++    expect(ephemeralSlotKey(() => "known-id")).toBe("ephemeral-known-id");
++  });
++
++  it("works on the internal HTTP origin without crypto.randomUUID", () => {
++    expect(ephemeralSlotKey(null)).toMatch(/^ephemeral-[a-z0-9]+-[a-z0-9]+$/);
++  });
++});
+diff --git a/test/src/composables/traceHunterReplay.spec.ts b/test/src/composables/traceHunterReplay.spec.ts
+new file mode 100644
+index 00000000..fc7eb3eb
+--- /dev/null
++++ b/test/src/composables/traceHunterReplay.spec.ts
+@@ -0,0 +1,71 @@
++import { afterEach, describe, expect, it, vi } from "vitest";
++import { replayEventText, safeReplayText, startTraceHunterReplay } from "../../../src/composables/traceHunterReplay";
++
++afterEach(() => vi.unstubAllGlobals());
++
++describe("Trace Hunter read-only terminal replay", () => {
++  it("strips terminal control sequences from untrusted Agent output", () => {
++    expect(safeReplayText("before\x1b[2J\x1b]52;c;secret\x07after"))
++      .toBe("before[2J]52;c;secretafter");
++    expect(replayEventText({ id: 1, turn_id: "t", type: "message",
++      payload: { text: "hello\nworld", tools: [{ name: "Bash" }] } }, "http://local"))
++      .toBe("hello\nworld\n[调用工具] Bash");
++  });
++
++  it("reads an already completed import without opening a PTY or SSE stream", async () => {
++    const id = "d410918e-34e5-5a13-bff5-2e63865bae2c";
++    const outputs: string[] = [];
++    const status = vi.fn();
++    const fetch = vi.fn(async (url: string) => ({ ok: true, json: async () => {
++      if (url.endsWith(`/sessions/${id}`)) return { session_id: id, project_id: "synthetic",
++        turns: [{ turn_id: "t1", ordinal: 1, prompt: "导入合成文件", state: "succeeded", task_id: "job-1" }] };
++      if (url.includes("/events/page")) return { items: [{ id: 1, turn_id: "t1", type: "message",
++        payload: { text: "Adapter 已选择" } }] };
++      return { state: "succeeded", current_stage: "readback", progress: 1,
++        result: { run_id: "synthetic-run", revision: 1 } };
++    } }));
++    const stream = vi.fn();
++    vi.stubGlobal("fetch", fetch);
++    vi.stubGlobal("EventSource", stream);
++    const stop = startTraceHunterReplay(id, text => outputs.push(text), status);
++    await vi.waitFor(() => expect(outputs.join(" ")).toContain("[导入成功]"));
++    expect(outputs.join(" ")).toContain("Adapter 已选择");
++    expect(stream).not.toHaveBeenCalled();
++    expect(fetch.mock.calls.every(([url]) => url.startsWith("/api/v1/"))).toBe(true);
++    expect(status).toHaveBeenCalledWith("connected");
++    stop();
++  });
++
++  it("rejects an invalid session id without fetching or launching anything", async () => {
++    const outputs: string[] = [];
++    const fetch = vi.fn();
++    vi.stubGlobal("fetch", fetch);
++    const stop = startTraceHunterReplay("bad/id", text => outputs.push(text), vi.fn());
++    await vi.waitFor(() => expect(outputs.join(" ")).toContain("无效的导入会话 ID"));
++    expect(fetch).not.toHaveBeenCalled();
++    stop();
++  });
++
++  it("follows live Agent events once, then closes the read-only stream", async () => {
++    const id = "d410918e-34e5-5a13-bff5-2e63865bae2c";
++    const outputs: string[] = [];
++    const listeners = new Map<string, (event: MessageEvent) => void>();
++    const close = vi.fn();
++    const stream = vi.fn().mockImplementation(function () {
++      return { addEventListener: (name: string, listener: (event: MessageEvent) => void) => listeners.set(name, listener),
++        close, onopen: null, onerror: null };
++    });
++    vi.stubGlobal("EventSource", stream);
++    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () =>
++      url.includes("/events/page") ? { items: [] } : { session_id: id, project_id: "synthetic",
++        turns: [{ turn_id: "t1", ordinal: 1, prompt: "导入合成文件", state: "running", task_id: null }] } })));
++    const stop = startTraceHunterReplay(id, text => outputs.push(text), vi.fn());
++    await vi.waitFor(() => expect(stream).toHaveBeenCalledOnce());
++    const event = { data: JSON.stringify({ id: 1, turn_id: "t1", type: "message", payload: { text: "处理中" } }) } as MessageEvent;
++    listeners.get("message")?.(event);
++    listeners.get("message")?.(event);
++    expect(outputs.join(" ").match(/处理中/g)).toHaveLength(1);
++    stop();
++    expect(close).toHaveBeenCalledOnce();
++  });
++});
+diff --git a/test/src/composables/traceHunterReplayTerminal.spec.ts b/test/src/composables/traceHunterReplayTerminal.spec.ts
+new file mode 100644
+index 00000000..ffef06b3
+--- /dev/null
++++ b/test/src/composables/traceHunterReplayTerminal.spec.ts
+@@ -0,0 +1,35 @@
++import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
++
++const { termState, keyState } = await vi.hoisted(async () =>
++  (await import("../../helpers/xtermDouble")).createXtermState());
++vi.mock("@xterm/xterm", async () => (await import("../../helpers/xtermDouble")).xtermModule(termState, keyState));
++vi.mock("@xterm/addon-fit", async () => (await import("../../helpers/xtermDouble")).fitAddonModule());
++vi.mock("@xterm/addon-web-links", async () => (await import("../../helpers/xtermDouble")).webLinksAddonModule());
++vi.mock("@xterm/addon-clipboard", async () => (await import("../../helpers/xtermDouble")).clipboardAddonModule());
++vi.mock("@xterm/xterm/css/xterm.css", () => ({}));
++
++import * as conn from "../../../src/composables/useTerminalConnections";
++import { FakeWebSocket } from "../../helpers/xtermDouble";
++
++describe("read-only replay reuses the terminal canvas", () => {
++  beforeEach(() => {
++    FakeWebSocket.instances.length = 0;
++    vi.stubGlobal("WebSocket", FakeWebSocket);
++    vi.stubGlobal("fetch", vi.fn(async (url: string) => ({ ok: true, json: async () =>
++      url.includes("/events/page") ? { items: [] } : { session_id: "d410918e-34e5-5a13-bff5-2e63865bae2c",
++        project_id: "synthetic", turns: [{ turn_id: "t1", ordinal: 1, prompt: "test", state: "succeeded", task_id: null }] } })));
++  });
++  afterEach(() => { conn.release("replay-test"); vi.unstubAllGlobals(); });
++
++  it("does not open a PTY or accept keyboard input", async () => {
++    const onInput = vi.fn();
++    conn.attach("replay-test", { sessionId: null, replaySessionId: "d410918e-34e5-5a13-bff5-2e63865bae2c",
++      cwd: null, devTerminal: false, command: null, launcher: null }, { onInput }, document.createElement("div"));
++    await vi.waitFor(() => expect(conn.connView.get("replay-test")?.status).toBe("connected"));
++    expect(FakeWebSocket.instances).toHaveLength(0);
++    expect(termState.options.disableStdin).toBe(true);
++    termState.emitData("do not send this");
++    expect(onInput).not.toHaveBeenCalled();
++    expect(FakeWebSocket.instances).toHaveLength(0);
++  });
++});
